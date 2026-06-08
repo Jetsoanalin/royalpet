@@ -25,6 +25,11 @@ const { startScheduler } = require("./services/backupService");
 
 const app = express();
 
+// Vercel sits behind a reverse proxy; required for req.ip and express-rate-limit
+if (process.env.VERCEL || process.env.NODE_ENV === "production") {
+  app.set("trust proxy", 1);
+}
+
 app.use(securityMiddleware);
 app.use(requestLogger);
 app.use(apiLimiter);
