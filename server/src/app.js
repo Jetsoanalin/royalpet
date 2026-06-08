@@ -29,7 +29,9 @@ const app = express();
 app.set("trust proxy", process.env.VERCEL || env.isProd ? 1 : false);
 
 app.use(securityMiddleware);
-app.use(requestLogger);
+if (!process.env.VERCEL) {
+  app.use(requestLogger);
+}
 app.use(apiLimiter);
 app.use(express.text({ type: ["text/*", "application/csv"], limit: "5mb" }));
 app.use(express.json({ limit: "10mb" })); // Increased for backup restore payloads

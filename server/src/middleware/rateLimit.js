@@ -22,6 +22,7 @@ const apiLimiter = rateLimit({
   max: env.RATE_LIMIT_MAX,
   standardHeaders: true,
   legacyHeaders: false,
+  skip: () => isVercel,
   ...(isVercel
     ? {
         keyGenerator: (req) => clientIp(req),

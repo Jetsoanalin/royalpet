@@ -5,7 +5,8 @@
   "installCommand": "npm ci --prefix client && npm ci --prefix server",
   "functions": {
     "api/index.js": {
-      "includeFiles": "server/**"
+      "includeFiles": "server/**",
+      "maxDuration": 30
     },
     "api/cron/backup.js": {
       "includeFiles": "server/**"
