@@ -554,10 +554,10 @@ function LoginPage({ onLogin, goRegister, activeSessions, onSwitchUser }) {
   const [loading, setLoading] = useState(false);
 
   const DEMOS = [
-    { label: "Doctor", email: "doctor@royalpet.in", pass: "doctor123", icon: "👨‍⚕️", desc: "Full clinical access", bg: "#0d1f2d" },
-    { label: "Receptionist", email: "reception@royalpet.in", pass: "recep123", icon: "👩‍💼", desc: "Appointments & billing", bg: "#1d6a6a" },
-    { label: "Admin", email: "admin@royalpet.in", pass: "admin123", icon: "🛠️", desc: "System administration", bg: "#7a1a1a" },
-    { label: "Pet Owner", email: "owner@royalpet.in", pass: "owner123", icon: "🐾", desc: "View records & cards", bg: "#7a5c1e" },
+    { label: "Doctor", email: "doctor@royalpet.com", pass: "Doctor@123", icon: "👨‍⚕️", desc: "Full clinical access", bg: "#0d1f2d" },
+    { label: "Receptionist", email: "staff@royalpet.com", pass: "Staff@123", icon: "👩‍💼", desc: "Appointments & billing", bg: "#1d6a6a" },
+    { label: "Admin", email: "admin@royalpet.com", pass: "Admin@123", icon: "🛠️", desc: "System administration", bg: "#7a1a1a" },
+    { label: "Pet Owner", email: "owner@royalpet.com", pass: "Owner@123", icon: "🐾", desc: "View records & cards", bg: "#7a5c1e" },
   ];
 
   const ROLE_LABELS = { doctor: "Veterinarian", receptionist: "Receptionist", admin: "Admin", owner: "Pet Owner" };

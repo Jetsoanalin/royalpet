@@ -20,7 +20,61 @@ This workspace contains a complete **full-stack** Royal Pet Clinic application.
 
 ## 🚀 Production Deployment
 
-### 1) Build the client
+### Option A — Vercel + Appwrite (recommended for serverless)
+
+**Architecture:** React SPA on Vercel CDN, Express API as Vercel Serverless Functions, data in Appwrite Databases, images in Appwrite Storage.
+
+#### 1) Provision Appwrite (one time)
+
+Create a project at [Appwrite Cloud](https://cloud.appwrite.io), generate an **API key** with Databases + Storage scopes, then:
+
+```bash
+cd server
+cp .env.example .env   # fill APPWRITE_* and JWT_SECRET
+npm install
+npm run setup:appwrite
+```
+
+This creates collections, a storage bucket, and seeds default users.
+
+#### 2) Deploy to Vercel
+
+Connect the repo to Vercel. Set environment variables from `.env.example` (root or server):
+
+| Variable | Purpose |
+|----------|---------|
+| `JWT_SECRET` | Auth signing |
+| `DATABASE_PROVIDER` | `appwrite` |
+| `APPWRITE_ENDPOINT` | e.g. `https://sgp.cloud.appwrite.io/v1` |
+| `APPWRITE_PROJECT_ID` | e.g. `69cb82450038c7fe298c` |
+| `APPWRITE_API_KEY` | Server-side API key (never expose to client) |
+| `APPWRITE_DATABASE_ID` | `royalpetshop` |
+| `APPWRITE_BUCKET_ID` | `royalpet-images` (default) |
+| `STORAGE_PROVIDER` | `appwrite` |
+| `STORAGE_PUBLIC_BASE_URL` | Public URL prefix for uploaded images |
+| `CORS_ORIGINS` | Your Vercel URL |
+| `CRON_SECRET` | Random string for nightly backup cron |
+| `ALLOW_BULK_SYNC` | `true` |
+
+Vercel uses `vercel.json` to build the client, bundle the API, and run nightly backups at 2 AM via `/api/cron/backup`.
+
+#### 3) Local dev with Appwrite
+
+```bash
+# Terminal 1 — API
+cd server && npm run dev
+
+# Terminal 2 — client (proxies /api to :4000)
+cd client && npm run dev
+```
+
+Set `DATABASE_PROVIDER=appwrite` and Appwrite env vars in `server/.env`.
+
+---
+
+### Option B — Render monolith (SQLite / Postgres)
+
+#### 1) Build the client
 
 ```bash
 cd client
@@ -28,7 +82,7 @@ npm install
 npm run build
 ```
 
-### 2) Start the server in production
+#### 2) Start the server in production
 
 ```bash
 cd server
@@ -78,10 +132,10 @@ npm run reset-db   # Drop + rebuild + seed
 
 Use the seeded users:
 
-- `doctor@royalpet.in` / `doctor123` (Doctor)
-- `reception@royalpet.in` / `recep123` (Receptionist)
-- `admin@royalpet.in` / `admin123` (Admin)
-- `owner@royalpet.in` / `owner123` (Pet Owner)
+- `admin@royalpet.com` / `Admin@123` (Admin)
+- `doctor@royalpet.com` / `Doctor@123` (Doctor)
+- `staff@royalpet.com` / `Staff@123` (Receptionist)
+- `owner@royalpet.com` / `Owner@123` (Pet Owner)
 
 ---
 

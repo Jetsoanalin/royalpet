@@ -51,6 +51,27 @@ const storeFile = async (file) => {
 
   const key = buildObjectKey(file.originalname);
 
+  if (env.STORAGE_PROVIDER === "appwrite") {
+    const { getStorage, ID } = require("../db/appwriteClient");
+    const { InputFile } = require("node-appwrite/file");
+    const storage = getStorage();
+    const fileId = ID.unique();
+    const upload = InputFile.fromBuffer(file.buffer, file.originalname);
+    await storage.createFile(env.APPWRITE_BUCKET_ID, fileId, upload);
+    const base = env.STORAGE_PUBLIC_BASE_URL || env.S3_PUBLIC_BASE_URL;
+    const pathUrl = base
+      ? `${base.replace(/\/$/, "")}/${key}`
+      : `/uploads/${key}`;
+
+    return {
+      name: file.originalname,
+      key: fileId,
+      size: file.size,
+      provider: "appwrite",
+      path: pathUrl,
+    };
+  }
+
   if (env.STORAGE_PROVIDER === "s3") {
     const client = getS3Client();
     await client.send(new PutObjectCommand({

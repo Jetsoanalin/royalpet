@@ -9,6 +9,7 @@
     "migrate": "knex migrate:latest --knexfile knexfile.js",
     "seed": "knex seed:run --knexfile knexfile.js",
     "reset-db": "knex migrate:rollback --all --knexfile knexfile.js && npm run migrate && npm run seed",
+    "setup:appwrite": "node scripts/setup-appwrite.js",
     "test": "cross-env NODE_ENV=test JWT_SECRET=test-secret jest --runInBand"
   },
   "dependencies": {
@@ -24,8 +25,10 @@
     "knex": "^2.5.1",
     "morgan": "^1.10.0",
     "multer": "^1.4.5-lts.1",
+    "node-appwrite": "^14.1.0",
     "node-cron": "^3.0.3",
     "pg": "^8.11.0",
+    "serverless-http": "^3.2.0",
     "sqlite3": "^5.1.6",
     "winston": "^3.15.0",
     "zod": "^3.24.1"

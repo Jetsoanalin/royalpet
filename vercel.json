@@ -1,0 +1,26 @@
+{
+  "version": 2,
+  "buildCommand": "cd client && npm ci && npm run build && cd ../server && npm ci",
+  "outputDirectory": "client/dist",
+  "installCommand": "npm ci --prefix client && npm ci --prefix server",
+  "functions": {
+    "api/index.js": {
+      "includeFiles": "server/**"
+    },
+    "api/cron/backup.js": {
+      "includeFiles": "server/**"
+    }
+  },
+  "rewrites": [
+    { "source": "/api/cron/backup", "destination": "/api/cron/backup" },
+    { "source": "/api/(.*)", "destination": "/api" },
+    { "source": "/uploads/(.*)", "destination": "/api" },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ],
+  "crons": [
+    {
+      "path": "/api/cron/backup",
+      "schedule": "0 2 * * *"
+    }
+  ]
+}

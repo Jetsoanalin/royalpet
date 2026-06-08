@@ -1,6 +1,8 @@
 ﻿const db = require("../db/knex");
 
-const CLIENT = db.client && db.client.config && db.client.config.client;
+const CLIENT = db.isAppwrite
+  ? "appwrite"
+  : (db.client && db.client.config && db.client.config.client);
 const TABLE_COLUMNS = new Map();
 
 const getTableColumns = async (table) => {
@@ -31,6 +33,10 @@ const getInsertId = (result) => (Array.isArray(result) ? result[0] : result);
 
 const insertWithId = async (table, payload, trx) => {
   const runner = trx || db;
+  if (CLIENT === "appwrite") {
+    const result = await runner(table).insert(payload);
+    return Number(result);
+  }
   if (CLIENT === "pg") {
     const [row] = await runner(table).insert(payload).returning("id");
     return row && row.id ? row.id : row;

@@ -1,8 +1,13 @@
 ﻿const db = require("../db/knex");
+const { hasColumn } = require("../db/schema");
 
 let HAS_OWNER_ID;
 const hasOwnerIdColumn = async () => {
   if (HAS_OWNER_ID !== undefined) return HAS_OWNER_ID;
+  if (db.isAppwrite) {
+    HAS_OWNER_ID = hasColumn("users", "ownerId");
+    return HAS_OWNER_ID;
+  }
   try {
     HAS_OWNER_ID = await db.schema.hasColumn("users", "ownerId");
   } catch {

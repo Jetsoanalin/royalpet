@@ -47,10 +47,10 @@ app.use("/api/import", csvImportRoutes);   // /api/import/pets-owners etc.
 app.use("/api", adminRoutes);
 app.use("/api", resourceRoutes);
 
-// Serve built client if available
+// Serve built client if available (skip on Vercel — static assets served by the platform)
 const clientDist = path.resolve(__dirname, "..", "..", "client", "dist");
 const clientIndex = path.join(clientDist, "index.html");
-const hasClient = fs.existsSync(clientIndex);
+const hasClient = !process.env.VERCEL && fs.existsSync(clientIndex);
 
 if (hasClient) {
   app.use(express.static(clientDist));
@@ -65,7 +65,9 @@ if (hasClient) {
 
 app.use(errorHandler);
 
-// Start nightly backup scheduler (no-op if node-cron not installed)
-startScheduler();
+// Start nightly backup scheduler (skip on Vercel — use /api/cron/backup instead)
+if (!process.env.VERCEL) {
+  startScheduler();
+}
 
 module.exports = app;

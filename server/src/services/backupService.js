@@ -83,15 +83,7 @@ const restoreSnapshot = async (backupId) => {
     throw new Error("Backup snapshot is corrupted");
   }
 
-  const isPostgres = db.client.config.client === "pg";
-
   await db.transaction(async (trx) => {
-    // Disable FK checks for the duration of the restore
-    if (isPostgres) {
-      await trx.raw("SET session_replication_role = replica");
-    }
-
-    // Clear tables in reverse order (children before parents)
     const reversed = [...BACKUP_TABLES].reverse();
     for (const table of reversed) {
       try {
@@ -101,36 +93,16 @@ const restoreSnapshot = async (backupId) => {
       }
     }
 
-    // Re-insert in dependency order
     for (const table of BACKUP_TABLES) {
       const rows = snapshot[table];
       if (!Array.isArray(rows) || !rows.length) continue;
       try {
-        // Insert in chunks of 100 to avoid parameter limits
         for (let i = 0; i < rows.length; i += 100) {
           await trx(table).insert(rows.slice(i, i + 100));
         }
       } catch (err) {
         logger.error(`[restore] Failed to restore ${table}: ${err.message}`);
         throw err;
-      }
-    }
-
-    // Re-enable FK checks and reset sequences
-    if (isPostgres) {
-      await trx.raw("SET session_replication_role = DEFAULT");
-      for (const table of BACKUP_TABLES) {
-        try {
-          await trx.raw(`
-            SELECT setval(
-              pg_get_serial_sequence('${table}', 'id'),
-              COALESCE((SELECT MAX(id) FROM "${table}"), 0) + 1,
-              false
-            )
-          `);
-        } catch {
-          // Table might not have a serial id — skip silently
-        }
       }
     }
   });

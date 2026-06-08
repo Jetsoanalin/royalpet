@@ -33,12 +33,25 @@ const getActivityLog = async (filters = {}) => {
 const getActivityStats = async (days = 7) => {
   const startDate = new Date();
   startDate.setDate(startDate.getDate() - days);
-  
+
+  if (db.isAppwrite) {
+    const rows = await db("activity_log").where("time", ">=", startDate);
+    const grouped = new Map();
+    rows.forEach((row) => {
+      const key = `${row.action}::${row.type}`;
+      grouped.set(key, (grouped.get(key) || 0) + 1);
+    });
+    return Array.from(grouped.entries()).map(([key, total]) => {
+      const [action, type] = key.split("::");
+      return { total: String(total), action, type };
+    });
+  }
+
   const logs = await db("activity_log")
     .where("time", ">=", startDate)
     .select(db.raw("COUNT(*) as total"), db.raw("action"), db.raw("type"))
     .groupBy("action", "type");
-  
+
   return logs;
 };
 
