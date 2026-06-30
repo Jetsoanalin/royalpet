@@ -32,7 +32,7 @@ const getPet = async (req, res) => {
 };
 
 const createPet = async (req, res) => {
-  const { name, type, breed, dob, sex, weight, ownerId, photo, color } = req.body;
+  const { name, type, breed, dob, age, sex, weight, ownerId, photo, color } = req.body;
   if (!name || !ownerId) throw new ApiError(400, "Name and ownerId required");
   
   const owner = await db("owners").where({ id: ownerId }).first();
@@ -43,6 +43,7 @@ const createPet = async (req, res) => {
     type: type || "Dog",
     breed: breed || "",
     dob: dob || null,
+    age: age || "",
     sex: sex || "",
     weight: weight || 0,
     ownerId,
@@ -56,7 +57,7 @@ const createPet = async (req, res) => {
 };
 
 const updatePet = async (req, res) => {
-  const { name, type, breed, dob, sex, weight, ownerId, photo, color } = req.body;
+  const { name, type, breed, dob, age, sex, weight, ownerId, photo, color } = req.body;
   const existing = await db("pets").where({ id: req.params.id }).first();
   if (!existing) throw new ApiError(404, "Pet not found");
   
@@ -70,6 +71,7 @@ const updatePet = async (req, res) => {
     type: type !== undefined ? type : existing.type,
     breed: breed !== undefined ? breed : existing.breed,
     dob: dob !== undefined ? dob : existing.dob,
+    age: age !== undefined ? age : existing.age,
     sex: sex !== undefined ? sex : existing.sex,
     weight: weight !== undefined ? weight : existing.weight,
     ownerId: ownerId !== undefined ? ownerId : existing.ownerId,

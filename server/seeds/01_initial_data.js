@@ -1,20 +1,14 @@
 ﻿const bcrypt = require("bcrypt");
 
 exports.seed = async function (knex) {
-
-  // ── IDEMPOTENCY GUARD ────────────────────────────────────────────────────
-  // Only seed if the database is completely empty.
-  // This prevents wiping real clinic data on every restart/redeploy.
   const existing = await knex("users").count("id as count").first();
   if (parseInt(existing.count) > 0) {
     console.log("[seed] Data already exists — skipping to protect live data.");
     return;
   }
-  // ────────────────────────────────────────────────────────────────────────
 
   const isPostgres = knex.client.config.client === "pg";
 
-  // ── 1. CLINIC SETTINGS ───────────────────────────────────────────────────
   await knex("clinic_settings").insert([
     {
       id: 1,
@@ -29,10 +23,20 @@ exports.seed = async function (knex) {
     },
   ]);
 
-  // ── 2. USERS ─────────────────────────────────────────────────────────────
   const adminHash = await bcrypt.hash("Admin@123", 10);
   const doctorHash = await bcrypt.hash("Doctor@123", 10);
-  const staffHash = await bcrypt.hash("Staff@123", 10);
+  const receptionHash = await bcrypt.hash("Recep@123", 10);
+  const ownerHash = await bcrypt.hash("Owner@123", 10);
+
+  await knex("owners").insert([
+    {
+      id: 1,
+      name: "Amit Patel",
+      mobile: "9876543210",
+      email: "owner@royalpet.com",
+      address: "Mumbai",
+    },
+  ]);
 
   await knex("users").insert([
     {
@@ -42,7 +46,9 @@ exports.seed = async function (knex) {
       password: adminHash,
       role: "admin",
       mobile: "+91-9000000001",
+      avatar: "SA",
       active: true,
+      ownerId: null,
     },
     {
       id: 2,
@@ -51,22 +57,48 @@ exports.seed = async function (knex) {
       password: doctorHash,
       role: "doctor",
       mobile: "+91-9000000002",
+      avatar: "PS",
       active: true,
+      ownerId: null,
     },
     {
       id: 3,
-      name: "Rahul Staff",
-      email: "staff@royalpet.com",
-      password: staffHash,
-      role: "staff",
+      name: "Rahul Reception",
+      email: "reception@royalpet.com",
+      password: receptionHash,
+      role: "receptionist",
       mobile: "+91-9000000003",
+      avatar: "RR",
       active: true,
+      ownerId: null,
+    },
+    {
+      id: 4,
+      name: "Amit Patel",
+      email: "owner@royalpet.com",
+      password: ownerHash,
+      role: "owner",
+      mobile: "9876543210",
+      avatar: "AP",
+      active: true,
+      ownerId: 1,
     },
   ]);
 
-  // ── 3. RESET SEQUENCES (PostgreSQL only) ─────────────────────────────────
-  // After inserting rows with explicit IDs, the sequence counter must be
-  // moved past the highest ID so future inserts don't collide.
+  await knex("pets").insert([
+    {
+      id: 1,
+      name: "Bruno",
+      type: "Dog",
+      breed: "Labrador",
+      dob: "2020-03-15",
+      sex: "Male",
+      weight: 28,
+      ownerId: 1,
+      color: "Golden",
+    },
+  ]);
+
   if (isPostgres) {
     const tables = [
       "users",
@@ -96,7 +128,8 @@ exports.seed = async function (knex) {
   }
 
   console.log("[seed] Initial data seeded successfully.");
-  console.log("[seed] Admin login:  admin@royalpet.com  /  Admin@123");
-  console.log("[seed] Doctor login: doctor@royalpet.com /  Doctor@123");
-  console.log("[seed] Staff login:  staff@royalpet.com  /  Staff@123");
+  console.log("[seed] Admin:        admin@royalpet.com      / Admin@123");
+  console.log("[seed] Doctor:       doctor@royalpet.com     / Doctor@123");
+  console.log("[seed] Receptionist: reception@royalpet.com  / Recep@123");
+  console.log("[seed] Owner:        owner@royalpet.com      / Owner@123");
 };

@@ -3,6 +3,7 @@ const ApiError = require("../utils/ApiError");
 const { sendSuccess } = require("../utils/apiResponse");
 const { loadOwnerContext } = require("../services/ownerContextService");
 const { sanitizePayload, insertWithId, buildListQuery, paginate, getTableColumns } = require("../services/tableService");
+const { logActivity } = require("../services/activityService");
 
 const OWNER_SCOPES = {
   owners: (query, ctx) => query.where("owners.id", ctx.ownerId),
@@ -82,6 +83,7 @@ const createResource = (table) => async (req, res) => {
     if (missing.length) throw new ApiError(400, "Missing fields", missing);
   }
   const insertedId = await insertWithId(table, payload);
+  await logActivity(req.user.id, `create_${table}`, table, insertedId, {}, "info");
   return sendSuccess(res, { id: insertedId }, undefined, 201);
 };
 
@@ -119,6 +121,7 @@ const updateResource = (table) => async (req, res) => {
     updatedQuery = OWNER_SCOPES[table](updatedQuery, ctx);
   }
   const updated = await updatedQuery.first();
+  await logActivity(req.user.id, `update_${table}`, table, req.params.id, {}, "info");
   return sendSuccess(res, updated);
 };
 

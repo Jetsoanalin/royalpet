@@ -31,16 +31,17 @@ const createUser = async (req, res) => {
   };
 
   let userId;
+  const ownerIdColumnExists = await hasOwnerIdColumn();
   await db.transaction(async (trx) => {
     userId = await insertWithId("users", userPayload, trx);
-    if (safeRole === "owner" && await hasOwnerIdColumn()) {
+    if (safeRole === "owner" && ownerIdColumnExists) {
       const ownerId = await insertWithId("owners", { name, mobile, email, address: "" }, trx);
       await trx("users").where({ id: userId }).update({ ownerId });
     }
   });
 
   const cols = ["id", "name", "email", "role", "mobile", "active", "avatar", "lastLogin"];
-  if (await hasOwnerIdColumn()) cols.push("ownerId");
+  if (ownerIdColumnExists) cols.push("ownerId");
   const user = await db("users").select(cols).where({ id: userId }).first();
   return sendSuccess(res, user, undefined, 201);
 };
@@ -64,9 +65,10 @@ const updateUser = async (req, res) => {
   };
   if (password) updatePayload.password = await bcrypt.hash(password, 10);
 
+  const ownerIdColumnExists = await hasOwnerIdColumn();
   await db.transaction(async (trx) => {
     await trx("users").where({ id }).update(updatePayload);
-    if (safeRole === "owner" && await hasOwnerIdColumn()) {
+    if (safeRole === "owner" && ownerIdColumnExists) {
       const user = await trx("users").where({ id }).first();
       if (!user.ownerId) {
         const ownerId = await insertWithId("owners", { name, mobile, email, address: "" }, trx);
@@ -76,7 +78,7 @@ const updateUser = async (req, res) => {
   });
 
   const cols = ["id", "name", "email", "role", "mobile", "active", "avatar", "lastLogin"];
-  if (await hasOwnerIdColumn()) cols.push("ownerId");
+  if (ownerIdColumnExists) cols.push("ownerId");
   const user = await db("users").select(cols).where({ id }).first();
   return sendSuccess(res, user);
 };

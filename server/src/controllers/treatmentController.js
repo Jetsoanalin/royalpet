@@ -3,6 +3,8 @@ const { sendSuccess } = require("../utils/apiResponse");
 const { fetchTreatments } = require("../services/treatmentService");
 const { loadOwnerContext } = require("../services/ownerContextService");
 const { insertWithId } = require("../services/tableService");
+const { deductMedicinesForVisit } = require("../services/inventoryDeductionService");
+const { logActivity } = require("../services/activityService");
 
 const listTreatments = async (req, res) => {
   let petId = req.query.petId;
@@ -52,7 +54,19 @@ const createTreatment = async (req, res) => {
   }
 
   const treatments = await fetchTreatments({ visitId });
+  await logActivity(req.user.id, "create_treatment", "visit", visitId, { petId: payload.petId }, "info");
   return sendSuccess(res, treatments[0], undefined, 201);
 };
 
-module.exports = { listTreatments, getTreatment, createTreatment };
+const deductInventory = async (req, res) => {
+  const visitId = Number(req.params.id);
+  const { medicines } = req.body || {};
+  if (!visitId) throw new ApiError(400, "Invalid visit id");
+  if (!Array.isArray(medicines) || !medicines.length) throw new ApiError(400, "Medicines array required");
+
+  const result = await deductMedicinesForVisit(visitId, medicines);
+  await logActivity(req.user.id, "inventory_deduct", "visit", visitId, result, "info");
+  return sendSuccess(res, result);
+};
+
+module.exports = { listTreatments, getTreatment, createTreatment, deductInventory };

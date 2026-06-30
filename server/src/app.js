@@ -22,6 +22,7 @@ const backupRoutes = require("./routes/backupRoutes");
 const csvImportRoutes = require("./routes/csvImportRoutes");
 
 const { startScheduler } = require("./services/backupService");
+const { startReminderScheduler } = require("./services/reminderService");
 
 const app = express();
 
@@ -65,7 +66,10 @@ if (hasClient) {
 
 app.use(errorHandler);
 
-// Start nightly backup scheduler (no-op if node-cron not installed)
-startScheduler();
+// Skip background schedulers during tests (prevents Jest hanging on open handles)
+if (env.NODE_ENV !== "test") {
+  startScheduler();
+  startReminderScheduler();
+}
 
 module.exports = app;
