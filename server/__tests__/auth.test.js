@@ -290,4 +290,38 @@ describe("Auth — admin user management", () => {
     });
     expect(loginRes.status).toBe(403);
   });
+
+  it("user can change password via PATCH /api/me/password", async () => {
+    const loginRes = await loginAs(request, app, "admin");
+    const token = loginRes.body.data.token;
+
+    const failRes = await request(app)
+      .patch("/api/me/password")
+      .set("Authorization", `Bearer ${token}`)
+      .send({ currentPassword: "wrong", newPassword: "newpass1" });
+    expect(failRes.status).toBe(401);
+
+    const okRes = await request(app)
+      .patch("/api/me/password")
+      .set("Authorization", `Bearer ${token}`)
+      .send({ currentPassword: CREDENTIALS.admin.password, newPassword: "newpass1" });
+    expect(okRes.status).toBe(200);
+
+    const oldLogin = await request(app).post("/api/auth/login").send({
+      email: CREDENTIALS.admin.email,
+      password: CREDENTIALS.admin.password,
+    });
+    expect(oldLogin.status).toBe(401);
+
+    const newLogin = await request(app).post("/api/auth/login").send({
+      email: CREDENTIALS.admin.email,
+      password: "newpass1",
+    });
+    expect(newLogin.status).toBe(200);
+
+    await request(app)
+      .patch("/api/me/password")
+      .set("Authorization", `Bearer ${newLogin.body.data.token}`)
+      .send({ currentPassword: "newpass1", newPassword: CREDENTIALS.admin.password });
+  });
 });

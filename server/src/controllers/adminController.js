@@ -4,6 +4,24 @@ const { loadOwnerContext } = require("../services/ownerContextService");
 const { sendSuccess } = require("../utils/apiResponse");
 const { getActivityLog, getActivityStats } = require("../services/activityService");
 
+const flatToMatrix = (rows) => {
+  const map = new Map();
+  (rows || []).forEach((row) => {
+    if (!map.has(row.feature)) map.set(row.feature, { feature: row.feature, admin: true });
+    const entry = map.get(row.feature);
+    entry[row.role] = row.allowed === true || row.allowed === 1;
+  });
+  return Array.from(map.values());
+};
+
+const safeQuery = async (fn, fallback = []) => {
+  try {
+    return await fn();
+  } catch {
+    return fallback;
+  }
+};
+
 const buildScopedDump = async (user) => {
   const baseUserColumns = ["id", "name", "email", "role", "mobile", "active", "avatar", "lastLogin", "ownerId"];
 
@@ -36,11 +54,41 @@ const buildScopedDump = async (user) => {
       inventory: [],
       invoices,
       activityLog: [],
+      rolePermissions: [],
+      supplierPayments: [],
+      plannerTasks: [],
       clinicSettings: settings,
     };
   }
 
-  const [users, owners, pets, visits, prescriptions, appointments, vaccinations, inventory, invoices, activityLog, settings] = await Promise.all([
+  const staffExtras = user.role === "admin"
+    ? [
+        safeQuery(() => db("activity_log").select()),
+        safeQuery(() => db("role_permissions").select()),
+        safeQuery(() => db("supplier_payments").select()),
+      ]
+    : user.role === "doctor"
+      ? [Promise.resolve([]), Promise.resolve([]), safeQuery(() => db("supplier_payments").select())]
+      : [Promise.resolve([]), Promise.resolve([]), Promise.resolve([])];
+
+  const plannerQuery = safeQuery(() => db("planner_tasks").where({ userId: user.id }));
+
+  const [
+    users,
+    owners,
+    pets,
+    visits,
+    prescriptions,
+    appointments,
+    vaccinations,
+    inventory,
+    invoices,
+    activityLog,
+    rolePermissionsFlat,
+    supplierPayments,
+    plannerTasks,
+    settings,
+  ] = await Promise.all([
     db("users").select(baseUserColumns),
     db("owners").select(),
     db("pets").select(),
@@ -50,11 +98,28 @@ const buildScopedDump = async (user) => {
     db("vaccinations").select(),
     db("inventory").select(),
     db("invoices").select(),
-    user.role === "admin" ? db("activity_log").select() : [],
+    ...staffExtras,
+    plannerQuery,
     db("clinic_settings").select().first(),
   ]);
 
-  return { users, owners, pets, visits, prescriptions, appointments, vaccinations, inventory, invoices, activityLog, clinicSettings: settings };
+  return {
+    users,
+    owners,
+    pets,
+    visits,
+    prescriptions,
+    appointments,
+    vaccinations,
+    inventory,
+    invoices,
+    activityLog,
+    rolePermissions: flatToMatrix(rolePermissionsFlat),
+    rolePermissionsFlat,
+    supplierPayments,
+    plannerTasks,
+    clinicSettings: settings,
+  };
 };
 
 const getBootstrap = async (req, res) => {
@@ -69,29 +134,29 @@ const getDbDump = async (req, res) => {
 
 const getActivityLogs = async (req, res) => {
   if (req.user.role !== "admin") throw new ApiError(403, "Only admins can view activity logs");
-  
+
   const { action, type, days, limit } = req.query;
   const startDate = days ? new Date(Date.now() - days * 24 * 60 * 60 * 1000) : null;
-  
+
   const filters = {};
   if (action) filters.action = action;
   if (type) filters.type = type;
   if (startDate) filters.startDate = startDate;
-  if (limit) filters.limit = parseInt(limit);
-  
+  if (limit) filters.limit = parseInt(limit, 10);
+
   const logs = await getActivityLog(filters);
-  const statsData = await getActivityStats(parseInt(days) || 7);
-  
+  const statsData = await getActivityStats(parseInt(days, 10) || 7);
+
   return sendSuccess(res, { logs, stats: statsData });
 };
 
 const getActivityStatsEndpoint = async (req, res) => {
   if (req.user.role !== "admin") throw new ApiError(403, "Only admins can view activity stats");
-  
+
   const { days } = req.query;
-  const stats = await getActivityStats(parseInt(days) || 7);
-  
+  const stats = await getActivityStats(parseInt(days, 10) || 7);
+
   return sendSuccess(res, stats);
 };
 
-module.exports = { getBootstrap, getDbDump, getActivityLogs, getActivityStatsEndpoint };
+module.exports = { getBootstrap, getDbDump, getActivityLogs, getActivityStatsEndpoint, flatToMatrix };

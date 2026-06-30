@@ -38,6 +38,9 @@ registerResource("inventory", ["admin", "doctor", "receptionist"], true, ["admin
 registerResource("prescriptions", ["admin", "doctor"]);
 registerResource("invoices", ["admin", "doctor", "receptionist"]);
 registerResource("vaccinations", ["admin", "doctor", "receptionist"]);
+registerResource("role_permissions", ["admin"], true, ["admin"]);
+registerResource("supplier_payments", ["admin", "doctor", "receptionist"]);
+registerResource("planner_tasks", ["admin", "doctor", "receptionist", "owner"]);
 registerResource("activity_log", ["admin"], false, ["admin"]);
 registerResource("clinic_settings", ["admin"], false, ["admin"]);
 

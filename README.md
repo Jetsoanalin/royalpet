@@ -55,8 +55,19 @@ Connect the repo to Vercel. Set environment variables from `.env.example` (root 
 | `CORS_ORIGINS` | Your Vercel URL |
 | `CRON_SECRET` | Random string for nightly backup cron |
 | `ALLOW_BULK_SYNC` | `true` |
+| `RESEND_API_KEY` | Resend API key for reminder emails |
+| `EMAIL_FROM` | Sender address, e.g. `Royal Pet Clinic <noreply@yourdomain.com>` |
 
 Vercel uses `vercel.json` to build the client, bundle the API, and run nightly backups at 2 AM via `/api/cron/backup`.
+
+#### Post-deploy checklist
+
+After deploying UI–API integration updates:
+
+1. Run `npm run setup:appwrite` in `/server` to create new collections: `reminders`, `role_permissions`, `supplier_payments`, `planner_tasks`.
+2. Set `RESEND_API_KEY` and `EMAIL_FROM` on Vercel for email reminders.
+3. Verify `/api/health`, admin login, user create (`POST /api/users`), reminder send, backup create/download, and CSV import.
+4. Confirm owner pet edit and walk-in visits persist after page refresh.
 
 #### 3) Local dev with Appwrite
 

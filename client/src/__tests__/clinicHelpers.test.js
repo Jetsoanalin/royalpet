@@ -84,6 +84,12 @@ describe("clinicHelpers — role page access", () => {
     expect(canAccessPage("owner", "dashboard")).toBe(false);
   });
 
+  it("respects custom role permissions when provided", () => {
+    const perms = [{ feature: "billing", doctor: false, receptionist: true, admin: true, owner: false }];
+    expect(canAccessPage("doctor", "billing", perms)).toBe(false);
+    expect(canAccessPage("receptionist", "billing", perms)).toBe(true);
+  });
+
   it("unknown role has no access", () => {
     expect(canAccessPage("staff", "dashboard")).toBe(false);
   });

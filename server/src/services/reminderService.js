@@ -57,19 +57,27 @@ const buildReminders = async () => {
 const syncReminders = async () => {
   const reminders = await buildReminders();
   for (const r of reminders) {
-    const existing = await db("reminders")
-      .where({ type: r.type, refId: r.refId, status: r.status })
-      .first();
-    if (!existing) {
-      await db("reminders").insert({ ...r, createdAt: new Date(), updatedAt: new Date() });
+    try {
+      const existing = await db("reminders")
+        .where({ type: r.type, refId: r.refId, status: r.status })
+        .first();
+      if (!existing) {
+        await db("reminders").insert({ ...r, createdAt: new Date(), updatedAt: new Date() });
+      }
+    } catch {
+      /* reminders table may not exist yet */
     }
   }
   return reminders;
 };
 
 const listReminders = async () => {
-  const rows = await db("reminders").orderBy("dueDate", "asc").limit(100);
-  return rows;
+  try {
+    const rows = await db("reminders").orderBy("dueDate", "asc").limit(100);
+    return rows;
+  } catch {
+    return [];
+  }
 };
 
 let started = false;

@@ -2,8 +2,17 @@
 import {
   BREEDS_BY_TYPE, VITAL_OPTIONS, DEFAULT_ROLE_PERMISSIONS, PERMISSION_LABELS,
   dobFromAge, displayPetAge, runGlobalSearch, normalizePaymentMethod, buildInvoicePrintHtml,
-  canAccessPage,
+  canAccessPage, matrixToFlatPermissions,
 } from "../utils/clinicHelpers";
+import {
+  apiRequest, TOKEN_KEY, getToken, setToken, clearToken,
+  fetchUsers, createUser as apiCreateUser, updateUser as apiUpdateUser, deleteUser as apiDeleteUser,
+  updatePet as apiUpdatePet, createTreatment as apiCreateTreatment,
+  fetchReminders, syncReminders, sendReminder, sendAllReminders,
+  fetchActivityLogs, clearActivityLogs,
+  fetchBackups, createBackup, restoreBackup, restoreBackupUpload, downloadBackupExport,
+  importCsv, uploadFile, changePassword, fetchBootstrap,
+} from "../services/clinicApi";
 
 /* ROYAL PET CLINIC - Complete Management System
    Full-stack simulation: Auth, Routing, Role-based Dashboards, All Modules */
@@ -408,48 +417,16 @@ const GlobalStyles = () => (
 // "?"?"? Context "?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?
 const AppCtx = createContext(null);
 const useApp = () => useContext(AppCtx);
-const API_BASE_URL = import.meta.env.VITE_API_URL || "/api";
-const TOKEN_KEY = "rpc_token";
 const SESSION_KEY = "rpc_sessions";
 const MUTABLE_TABLES_BY_ROLE = {
-  admin: ["owners", "pets", "visits", "appointments", "inventory", "prescriptions", "invoices", "vaccinations", "activity_log", "clinic_settings"],
-  doctor: ["pets", "visits", "appointments", "inventory", "prescriptions", "invoices", "vaccinations"],
-  receptionist: ["owners", "pets", "visits", "appointments", "inventory", "invoices", "vaccinations"],
+  admin: ["owners", "pets", "visits", "appointments", "inventory", "prescriptions", "invoices", "vaccinations", "activity_log", "clinic_settings", "role_permissions", "supplier_payments", "planner_tasks"],
+  doctor: ["pets", "visits", "appointments", "inventory", "prescriptions", "invoices", "vaccinations", "supplier_payments", "planner_tasks"],
+  receptionist: ["owners", "pets", "visits", "appointments", "inventory", "invoices", "vaccinations", "planner_tasks"],
 };
 
-const getStoredToken = () => localStorage.getItem(TOKEN_KEY);
-const setStoredToken = (token) => localStorage.setItem(TOKEN_KEY, token);
-const clearStoredToken = () => localStorage.removeItem(TOKEN_KEY);
-
-const apiRequest = async (path, options = {}, tokenOverride) => {
-  const token = tokenOverride ?? getStoredToken();
-  const headers = {
-    ...(options.body instanceof FormData ? {} : { "Content-Type": "application/json" }),
-    ...(options.headers || {}),
-  };
-  if (token) headers.Authorization = `Bearer ${token}`;
-
-  const res = await fetch(`${API_BASE_URL}${path}`, {
-    ...options,
-    headers,
-  });
-
-  let payload = {};
-  const contentType = res.headers.get("content-type") || "";
-  if (contentType.includes("application/json")) {
-    payload = await res.json().catch(() => ({}));
-  } else if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    throw new Error(text?.slice(0, 120) || `Server error (${res.status})`);
-  }
-
-  if (!res.ok) {
-    const message = payload?.error?.message || payload?.error || payload?.message || `Request failed (${res.status})`;
-    throw new Error(message);
-  }
-
-  return payload?.data ?? payload;
-};
+const getStoredToken = getToken;
+const setStoredToken = setToken;
+const clearStoredToken = clearToken;
 // ctx shape: { db, saveDB, toast, logActivity, user }
 
 // "?"?"? Mock DB (localStorage-backed) "?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?
@@ -680,6 +657,9 @@ const normalizeDbSnapshot = (payload = {}) => {
     inventory: payload.inventory || [],
     invoices: payload.invoices || [],
     activityLog: payload.activityLog || [],
+    rolePermissions: payload.rolePermissions?.length ? payload.rolePermissions : DEFAULT_ROLE_PERMISSIONS,
+    supplierPayments: payload.supplierPayments || [],
+    plannerTasks: payload.plannerTasks || [],
     auditLog: fallback.auditLog || [],
   };
   next.clinicSettings = { ...fallback.clinicSettings, ...(payload.clinicSettings || {}) };
@@ -697,6 +677,9 @@ const toServerResourceMap = (snapshot) => ({
   vaccinations: snapshot.vaccinations || [],
   activity_log: snapshot.activityLog || [],
   clinic_settings: snapshot.clinicSettings ? [snapshot.clinicSettings] : [],
+  role_permissions: matrixToFlatPermissions(snapshot.rolePermissions || DEFAULT_ROLE_PERMISSIONS),
+  supplier_payments: snapshot.supplierPayments || [],
+  planner_tasks: (snapshot.plannerTasks || []).map((t) => ({ ...t, userId: t.userId })),
 });
 
 // "?"?"? Helpers "?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?
@@ -1053,8 +1036,9 @@ const NAV_OWNER = [
 ];
 
 function Sidebar({ page, setPage, user, collapsed, setCollapsed, mobileOpen, setMobileOpen }) {
-  const navItems = user.role === "admin" ? NAV_ADMIN : user.role === "doctor" ? NAV_DOCTOR : user.role === "receptionist" ? NAV_RECEP : NAV_OWNER;
-  const db = initDB();
+  const { db } = useApp();
+  const baseNav = user.role === "admin" ? NAV_ADMIN : user.role === "doctor" ? NAV_DOCTOR : user.role === "receptionist" ? NAV_RECEP : NAV_OWNER;
+  const navItems = baseNav.filter((item) => canAccessPage(user.role, item.id, db.rolePermissions));
   const lowStock = db.inventory.filter(i => i.stock < i.minStock).length;
   const waiting = db.visits.filter(v => v.status === "waiting").length;
   const ROLE_COLORS = { doctor: "#1d6a6a", receptionist: "#c9973a", admin: "#c0392b", owner: "#7a5c1e" };
@@ -1340,6 +1324,12 @@ function Topbar({ page, setPage, user, onLogout, onSwitchUser, globalSearch, set
 
 function AdminDashboard({ setPage }) {
   const { db } = useApp();
+  const [serverActivity, setServerActivity] = useState([]);
+  useEffect(() => {
+    fetchActivityLogs({ limit: 8 }).then((data) => {
+      setServerActivity(data?.logs || []);
+    }).catch(() => setServerActivity([]));
+  }, []);
   const totalRevenue = db.invoices.reduce((s, i) => s + i.total, 0);
   const todayRevenue = db.invoices.filter(i => i.date === todayStr()).reduce((s, i) => s + i.total, 0);
   const activeUsers = db.users.filter(u => u.active !== false).length;
@@ -1347,7 +1337,13 @@ function AdminDashboard({ setPage }) {
   const lowStock = db.inventory.filter(i => i.stock < i.minStock);
   const overdueVaccs = db.vaccinations.filter(v => v.status === "overdue");
   const pendingPayments = (db.supplierPayments||[]).filter(p => p.status === "pending");
-  const actLog = [...(db.activityLog||[])].reverse().slice(0,8);
+  const actLog = serverActivity.length
+    ? serverActivity.map((log) => ({
+        ...log,
+        time: typeof log.time === "string" ? log.time : new Date(log.time).toLocaleString("en-IN"),
+        details: typeof log.details === "string" ? (() => { try { const p = JSON.parse(log.details); return p.message || p.resourceType || log.details; } catch { return log.details; } })() : log.details,
+      }))
+    : [...(db.activityLog || [])].reverse().slice(0, 8);
   const ROLE_COLORS = { doctor:"#1d6a6a", receptionist:"#c9973a", admin:"#c0392b", owner:"#7a5c1e" };
 
   return (
@@ -1721,7 +1717,7 @@ function PetMiniCard({ pet, db }) {
 // ...............................................................................
 
 function QueuePage({ setPage, setConsultVisit }) {
-  const { db, saveDB, toast } = useApp();
+  const { db, saveDB, toast, refreshBootstrap } = useApp();
   const [filter, setFilter] = useState("all");
   const [showWalkIn, setShowWalkIn] = useState(false);
   const [vitalsVisit, setVitalsVisit] = useState(null);
@@ -1881,7 +1877,7 @@ function QueuePage({ setPage, setConsultVisit }) {
 }
 
 function WalkInModal({ onClose }) {
-  const { db, saveDB, toast } = useApp();
+  const { db, saveDB, toast, refreshBootstrap } = useApp();
   const [search, setSearch] = useState("");
   const [selectedPet, setSelectedPet] = useState(null);
   const [reason, setReason] = useState("");
@@ -1943,7 +1939,7 @@ function WalkInModal({ onClose }) {
 // ...............................................................................
 
 function AppointmentsPage() {
-  const { db, saveDB, toast } = useApp();
+  const { db, saveDB, toast, refreshBootstrap } = useApp();
   const [viewMode, setViewMode] = useState("day");
   const [showModal, setShowModal] = useState(false);
   const [form, setForm] = useState({ petId: "", date: todayStr(), time: "09:00", type: "New Visit", notes: "" });
@@ -1978,6 +1974,18 @@ function AppointmentsPage() {
       <div className="page-toolbar">
         <div><div className="pt">Appointments</div><div className="ps">Manage clinic schedule</div></div>
         <div className="page-toolbar-actions">
+          <label className="btn btn-ghost btn-sm" style={{ cursor: "pointer" }}>
+            Import CSV
+            <input type="file" accept=".csv,text/csv" style={{ display: "none" }} onChange={async (e) => {
+              const file = e.target.files?.[0];
+              if (!file) return;
+              try {
+                const result = await importCsv("appointments", file);
+                toast(`Imported ${result?.imported ?? result?.count ?? "appointments"}`, "success");
+                await refreshBootstrap();
+              } catch (err) { toast(err.message, "error"); }
+            }} />
+          </label>
           <div style={{ display: "flex", border: "1px solid var(--bdr)", borderRadius: 8, overflow: "hidden" }}>
             {["day", "week", "month"].map(v => (
               <button key={v} onClick={() => setViewMode(v)} style={{ padding: "7px 14px", border: "none", cursor: "pointer", fontFamily: "inherit", fontSize: 13, fontWeight: 600, background: viewMode === v ? "var(--ink)" : "var(--white)", color: viewMode === v ? "#fff" : "var(--txt2)", transition: "all .18s" }}>{v.charAt(0).toUpperCase() + v.slice(1)}</button>
@@ -2088,7 +2096,7 @@ function AppointmentsPage() {
 // ...............................................................................
 
 function PatientsPage({ setPage, setConsultVisit, onAddVaccine }) {
-  const { db, saveDB, toast } = useApp();
+  const { db, saveDB, toast, refreshBootstrap } = useApp();
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState(null);
   const [showModal, setShowModal] = useState(false);
@@ -2122,7 +2130,21 @@ function PatientsPage({ setPage, setConsultVisit, onAddVaccine }) {
     <div className="fu">
       <div className="page-toolbar">
         <div><div className="pt">Owners & Pets</div><div className="ps">{db.pets.length} pets · {db.owners.length} owners registered</div></div>
-        <button className="btn btn-gold" onClick={() => setShowModal(true)}>🐾 Register New Pet</button>
+        <div className="page-toolbar-actions">
+          <label className="btn btn-ghost" style={{ cursor: "pointer" }}>
+            Import CSV
+            <input type="file" accept=".csv,text/csv" style={{ display: "none" }} onChange={async (e) => {
+              const file = e.target.files?.[0];
+              if (!file) return;
+              try {
+                const result = await importCsv("pets-owners", file);
+                toast(`Imported ${result?.imported ?? result?.count ?? "records"}`, "success");
+                await refreshBootstrap();
+              } catch (err) { toast(err.message, "error"); }
+            }} />
+          </label>
+          <button className="btn btn-gold" onClick={() => setShowModal(true)}>🐾 Register New Pet</button>
+        </div>
       </div>
       <div className="srch" style={{ maxWidth: 420, marginBottom: 20 }}>
         <span className="srch-ic">🔍</span>
@@ -2193,7 +2215,7 @@ function PatientsPage({ setPage, setConsultVisit, onAddVaccine }) {
 }
 
 function PetProfile({ pet, onBack, setPage, setConsultVisit }) {
-  const { db, saveDB, toast } = useApp();
+  const { db, saveDB, toast, refreshBootstrap } = useApp();
   const owner = db.owners.find(o => o.id === pet.ownerId);
   const visits = db.visits.filter(v => v.petId === pet.id).sort((a, b) => new Date(b.date) - new Date(a.date));
   const vaccs = db.vaccinations.filter(v => v.petId === pet.id);
@@ -2347,14 +2369,21 @@ function PetProfile({ pet, onBack, setPage, setConsultVisit }) {
 // "?"? Image Upload Box (base64, no server needed) "?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?
 function ImageUploadBox({ label, files, onAdd, onRemove }) {
   const ref = useRef();
-  const handleFile = (e) => {
-    Array.from(e.target.files).forEach(file => {
-      const reader = new FileReader();
-      reader.onload = (ev) => {
-        onAdd({ name: file.name, type: file.type, size: file.size, data: ev.target.result, uploaded: new Date().toLocaleTimeString() });
-      };
-      reader.readAsDataURL(file);
-    });
+  const handleFile = async (e) => {
+    for (const file of Array.from(e.target.files)) {
+      if (file.size > 5 * 1024 * 1024) continue;
+      try {
+        const result = await uploadFile(file);
+        const url = result?.file?.url || result?.url;
+        onAdd({ name: file.name, type: file.type, size: file.size, url, uploaded: new Date().toLocaleTimeString() });
+      } catch {
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          onAdd({ name: file.name, type: file.type, size: file.size, data: ev.target.result, uploaded: new Date().toLocaleTimeString() });
+        };
+        reader.readAsDataURL(file);
+      }
+    }
     e.target.value = "";
   };
   return (
@@ -2538,7 +2567,7 @@ function TreatmentSection({ title, icon, options, items, onAdd, onRemove, onUpda
 }
 
 function ConsultationPage({ consultVisit }) {
-  const { db, saveDB, toast } = useApp();
+  const { db, saveDB, toast, refreshBootstrap } = useApp();
   const [tab, setTab] = useState("diagnosis");
   const getActiveVisit = () => {
     if (consultVisit) return consultVisit;
@@ -2635,42 +2664,36 @@ function ConsultationPage({ consultVisit }) {
   // collect all treatment medicines for Rx
   const allMedFromTreatment = () => Object.entries(treatment).flatMap(([, items]) => items);
 
-  // Deduct medicines from inventory by name match
-  const deductFromInventory = (medList) => {
-    let deducted = [];
-    let notFound = [];
-    medList.forEach(m => {
-      const match = db.inventory.find(inv => inv.name.toLowerCase().includes(m.name.toLowerCase().split(" ")[0]));
-      if (match && match.stock > 0) {
-        const qty = parseInt(m.duration) || 1;
-        const deductQty = Math.min(qty, match.stock);
-        match.stock = Math.max(0, match.stock - deductQty);
-        deducted.push(`${match.name} (-${deductQty})`);
-      } else {
-        notFound.push(m.name);
-      }
-    });
-    return { deducted, notFound };
-  };
-
   const saveDiagnosis = async () => {
     const allMed = medicines.length > 0 ? medicines : allMedFromTreatment();
-    const imagingPayload = Object.entries(imagingFiles).flatMap(([type, files]) =>
-      (files || []).map(f => ({ type, name: f.name, data: f.data, path: f.path || "" }))
-    );
+    const imagingPayload = [];
+    for (const [type, files] of Object.entries(imagingFiles)) {
+      for (const f of files || []) {
+        if (f.url) {
+          imagingPayload.push({ type, name: f.name, url: f.url });
+        } else if (f.data) {
+          imagingPayload.push({ type, name: f.name, data: f.data, path: f.path || "" });
+        }
+      }
+    }
     db.visits = db.visits.map(v => v.id === selVisit.id ? { ...v, temp: vitals.temp, hr: vitals.hr, rr: vitals.rr, weight: vitals.weight, diagnosis: dxText, notes: advice, imaging: imagingPayload } : v);
     if (allMed.length > 0) {
       const existing = db.prescriptions.find(p => p.visitId === selVisit.id);
       if (!existing) db.prescriptions.push({ id: db.prescriptions.length + 1, visitId: selVisit.id, medicines: allMed });
       else db.prescriptions = db.prescriptions.map(p => p.visitId === selVisit.id ? { ...p, medicines: allMed } : p);
       if (!selVisit.inventoryDeducted) {
-        const { deducted, notFound } = deductFromInventory(allMed);
         try {
-          await apiRequest(`/treatments/${selVisit.id}/deduct-inventory`, { method: "POST", body: JSON.stringify({ medicines: allMed }) });
-        } catch (err) { console.warn("Server inventory sync:", err.message); }
-        db.visits = db.visits.map(v => v.id === selVisit.id ? { ...v, inventoryDeducted: true } : v);
-        if (deducted.length) toast(`📦 Inventory updated: ${deducted.join(", ")}`, "success");
-        if (notFound.length) toast(`⚠️ Not in inventory: ${notFound.join(", ")}`, "warning");
+          const result = await apiRequest(`/treatments/${selVisit.id}/deduct-inventory`, { method: "POST", body: JSON.stringify({ medicines: allMed }) });
+          (result?.deducted || []).forEach(({ name, qty }) => {
+            const match = db.inventory.find(inv => inv.name === name);
+            if (match) match.stock = Math.max(0, match.stock - qty);
+          });
+          db.visits = db.visits.map(v => v.id === selVisit.id ? { ...v, inventoryDeducted: true } : v);
+          if (result?.deducted?.length) toast(`📦 Inventory updated: ${result.deducted.map(d => `${d.name} (-${d.qty})`).join(", ")}`, "success");
+          if (result?.notFound?.length) toast(`⚠️ Not in inventory: ${result.notFound.join(", ")}`, "warning");
+        } catch (err) {
+          toast(err.message || "Inventory deduction failed", "error");
+        }
       }
     }
     saveDB();
@@ -3300,7 +3323,7 @@ function ConsultationPage({ consultVisit }) {
 // ...............................................................................
 
 function VaccinationPage({ prefill, clearPrefill }) {
-  const { db, saveDB, toast } = useApp();
+  const { db, saveDB, toast, refreshBootstrap } = useApp();
   const [showModal, setShowModal] = useState(false);
   const [form, setForm] = useState({ petId: "", vaccine: "", given: todayStr(), batch: "", reminderDays: "21", notes: "" });
 
@@ -3335,6 +3358,18 @@ function VaccinationPage({ prefill, clearPrefill }) {
     <div className="fu">
       <div className="page-toolbar">
         <div><div className="pt">Vaccination Management</div><div className="ps">Track & schedule all vaccines with auto-reminders</div></div>
+        <label className="btn btn-ghost btn-sm" style={{ cursor: "pointer" }}>
+          Import CSV
+          <input type="file" accept=".csv,text/csv" style={{ display: "none" }} onChange={async (e) => {
+            const file = e.target.files?.[0];
+            if (!file) return;
+            try {
+              const result = await importCsv("vaccinations", file);
+              toast(`Imported ${result?.imported ?? result?.count ?? "vaccinations"}`, "success");
+              await refreshBootstrap();
+            } catch (err) { toast(err.message, "error"); }
+          }} />
+        </label>
         <div className="page-toolbar-actions">
           <button className="btn btn-gold" onClick={() => setShowModal(true)}>💉 Record Vaccination</button>
         </div>
@@ -3384,7 +3419,12 @@ function VaccinationPage({ prefill, clearPrefill }) {
                     <td style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,color:"var(--txt3)"}}>{v.batch||"—"}</td>
                     <td><span className={`badge ${v.status==="ok"?"b-bill":v.status==="due"?"b-wait":"b-emg"}`}>{v.status==="ok"?"✅ Current":v.status==="due"?"⏰ Due":"🔴 Overdue"}</span></td>
                     <td><div style={{display:"flex",gap:5}}>
-                      <button className="btn btn-gold btn-xs" onClick={()=>toast(`Reminder sent to ${owner?.name}!`,"success")}>🔔</button>
+                      <button className="btn btn-gold btn-xs" onClick={async () => {
+                        try {
+                          await sendReminder({ type: "vaccination", refId: v.id });
+                          toast(`Reminder email sent to ${owner?.name}`, "success");
+                        } catch (err) { toast(err.message, "error"); }
+                      }}>🔔</button>
                       <button className="btn btn-ghost btn-xs" onClick={()=>{ const msg=encodeURIComponent(`Hello ${owner?.name}, a vaccination reminder has been scheduled for ${pet?.name}. Please contact us to book an appointment.`); (function(num,txt){const wapp=`whatsapp://send?phone=91${num}&text=${txt}`;const web=`https://api.whatsapp.com/send?phone=91${num}&text=${txt}`;const a=document.createElement("a");a.href=wapp;a.click();setTimeout(()=>{if(!document.hidden)window.open(web,"_blank");},1500);})(owner?.mobile?.replace(/[^0-9]/g,"")|| "", msg); }} style={{background:"#25d366",color:"#fff",border:"none"}}>💬</button>
                     </div></td>
                   </tr>
@@ -3450,7 +3490,7 @@ function VaccinationPage({ prefill, clearPrefill }) {
 // ...............................................................................
 
 function InventoryPage() {
-  const { db, saveDB, toast } = useApp();
+  const { db, saveDB, toast, refreshBootstrap } = useApp();
   const [search, setSearch] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [form, setForm] = useState({ name: "", category: "Antibiotic", stock: "", unit: "tablets", minStock: "", batch: "", expiry: todayStr(), price: "", vendor: "" });
@@ -3489,6 +3529,18 @@ function InventoryPage() {
       <div className="page-toolbar">
         <div><div className="pt">Inventory Management</div><div className="ps">{lowStock.length} items below minimum · {expiredItems.length} expired · {expiringSoon.length} expiring within 30 days</div></div>
         <div className="page-toolbar-actions">
+          <label className="btn btn-ghost" style={{ cursor: "pointer" }}>
+            Import CSV
+            <input type="file" accept=".csv,text/csv" style={{ display: "none" }} onChange={async (e) => {
+              const file = e.target.files?.[0];
+              if (!file) return;
+              try {
+                const result = await importCsv("inventory", file);
+                toast(`Imported ${result?.imported ?? result?.count ?? "inventory items"}`, "success");
+                await refreshBootstrap();
+              } catch (err) { toast(err.message, "error"); }
+            }} />
+          </label>
           <button className="btn btn-ghost" onClick={() => {
             const rows = ["Item,Category,Stock,Unit,Min Stock,Batch,Expiry,Price,Vendor", ...db.inventory.map(i => `${i.name},${i.category},${i.stock},${i.unit},${i.minStock},${i.batch},${i.expiry},${i.price},${i.vendor}`)].join("\n");
             const a = document.createElement("a"); a.href = "data:text/csv;charset=utf-8,"+encodeURIComponent(rows); a.download = "inventory.csv"; a.click();
@@ -3591,7 +3643,7 @@ function InventoryPage() {
 // ...............................................................................
 
 function BillingPage({ setPage }) {
-  const { db, saveDB, toast } = useApp();
+  const { db, saveDB, toast, refreshBootstrap } = useApp();
   const [showNew, setShowNew] = useState(false);
   const [viewInv, setViewInv] = useState(null);
   const [newInv, setNewInv] = useState({ petId: "", ownerId: "", items: [{ name: "Consultation Fee", qty: 1, rate: 500, amt: 500 }], method: "Cash", notes: "" });
@@ -3799,24 +3851,24 @@ function AnalyticsPage() {
   );
 }
 function PlannerPage() {
-  const { db, saveDB, toast } = useApp();
+  const { db, saveDB, toast, user } = useApp();
   const todayApts = db.appointments.filter(a => a.date === todayStr()).sort((a, b) => a.time.localeCompare(b.time));
   const todayVisits = db.visits.filter(v => v.date === todayStr());
   const [showTask, setShowTask] = useState(false);
   const [task, setTask] = useState({ time: "", title: "", notes: "" });
-  const [tasks, setTasks] = useState(() => { try { return JSON.parse(localStorage.getItem("rpc_tasks") || "[]"); } catch { return []; } });
+  const tasks = (db.plannerTasks || []).filter(t => !t.userId || t.userId === user?.id);
 
   const saveTask = () => {
     if (!task.title) { toast("Enter task title", "error"); return; }
-    const newTasks = [...tasks, { id: Date.now(), ...task, date: todayStr(), done: false }];
-    setTasks(newTasks);
-    localStorage.setItem("rpc_tasks", JSON.stringify(newTasks));
-    toast("Task added!", "success"); setShowTask(false);
+    db.plannerTasks = [...tasks, { id: Date.now(), userId: user?.id, ...task, date: todayStr(), done: false }];
+    saveDB();
+    toast("Task added!", "success");
+    setShowTask(false);
     setTask({ time: "", title: "", notes: "" });
   };
   const toggleTask = (id) => {
-    const newTasks = tasks.map(t => t.id === id ? { ...t, done: !t.done } : t);
-    setTasks(newTasks); localStorage.setItem("rpc_tasks", JSON.stringify(newTasks));
+    db.plannerTasks = tasks.map(t => t.id === id ? { ...t, done: !t.done } : t);
+    saveDB();
   };
   const todayTasks = tasks.filter(t => t.date === todayStr());
 
@@ -3985,9 +4037,9 @@ function TimelinePage() {
 function RemindersPage() {
   const { db, toast } = useApp();
   const [serverReminders, setServerReminders] = useState([]);
+  const [sending, setSending] = useState(false);
   useEffect(() => {
-    apiRequest("/reminders").then(setServerReminders).catch(() => {});
-    apiRequest("/reminders/sync", { method: "POST" }).catch(() => {});
+    syncReminders().then(setServerReminders).catch(() => fetchReminders().then(setServerReminders).catch(() => {}));
   }, []);
   const settings = db.clinicSettings || {};
   const vaccLeadDays = settings.reminderVaccDays ?? 7;
@@ -4010,7 +4062,19 @@ function RemindersPage() {
       <div className="page-toolbar">
         <div><div className="pt">Automated Reminders</div><div className="ps">{overdueVaccs.length + followUps.length} reminders to send</div></div>
         <div className="page-toolbar-actions">
-          <button className="btn btn-gold" onClick={() => toast(`Sending all reminders via ${settings.reminderChannel || "Both"}...`, "success")}>📤 Send All Reminders</button>
+          <button className="btn btn-gold" disabled={sending} onClick={async () => {
+            setSending(true);
+            try {
+              const result = await sendAllReminders();
+              toast(`Sent ${result.sent || 0} reminder(s) via email`, "success");
+              const refreshed = await syncReminders();
+              setServerReminders(refreshed || []);
+            } catch (err) {
+              toast(err.message || "Could not send reminders", "error");
+            } finally {
+              setSending(false);
+            }
+          }}>{sending ? "Sending..." : "📤 Send All Reminders"}</button>
         </div>
       </div>
       <div className="card" style={{ marginBottom: 20 }}>
@@ -4044,7 +4108,14 @@ function RemindersPage() {
                     }));
                     (function(num,txt){const wapp=`whatsapp://send?phone=91${num}&text=${txt}`;const web=`https://api.whatsapp.com/send?phone=91${num}&text=${txt}`;const a=document.createElement("a");a.href=wapp;a.click();setTimeout(()=>{if(!document.hidden)window.open(web,"_blank");},1500);})(owner?.mobile?.replace(/[^0-9]/g,"")|| "", msg);
                   }} style={{ background: "#25d366", color: "#fff", border: "none" }}>💬 WhatsApp</button>
-                  <button className="btn btn-sm btn-ghost" onClick={() => toast(`Email sent to ${owner?.email}`, "success")}>📧 Email</button>
+                  <button className="btn btn-sm btn-ghost" onClick={async () => {
+                    try {
+                      await sendReminder({ type: "vaccination", refId: v.id });
+                      toast(`Email sent to ${owner?.email}`, "success");
+                    } catch (err) {
+                      toast(err.message || "Could not send email", "error");
+                    }
+                  }}>📧 Email</button>
                   </div>
                 </div>
               </div>
@@ -4080,7 +4151,14 @@ function RemindersPage() {
                     }));
                     (function(num,txt){const wapp=`whatsapp://send?phone=91${num}&text=${txt}`;const web=`https://api.whatsapp.com/send?phone=91${num}&text=${txt}`;const a=document.createElement("a");a.href=wapp;a.click();setTimeout(()=>{if(!document.hidden)window.open(web,"_blank");},1500);})(owner?.mobile?.replace(/[^0-9]/g,"")|| "", msg);
                   }} style={{ background: "#25d366", color: "#fff", border: "none" }}>💬 WhatsApp</button>
-                  <button className="btn btn-sm btn-ghost" onClick={() => toast(`Email sent to ${owner?.email}`, "success")}>📧 Email</button>
+                  <button className="btn btn-sm btn-ghost" onClick={async () => {
+                    try {
+                      await sendReminder({ type: "vaccination", refId: v.id });
+                      toast(`Email sent to ${owner?.email}`, "success");
+                    } catch (err) {
+                      toast(err.message || "Could not send email", "error");
+                    }
+                  }}>📧 Email</button>
                   </div>
                 </div>
               </div>
@@ -4089,6 +4167,32 @@ function RemindersPage() {
           {followUps.length === 0 && <div style={{ textAlign: "center", padding: 20, color: "var(--txt3)" }}>No upcoming follow-up reminders</div>}
         </div>
       </div>
+      {serverReminders.length > 0 && (
+        <div className="card" style={{ marginTop: 20 }}>
+          <div className="card-head"><span className="card-title">Server Reminders (synced)</span></div>
+          <div className="card-body">
+            {serverReminders.filter(r => r.status !== "sent").slice(0, 20).map((r) => (
+              <div key={r.id} className="reminder-item">
+                <div className="reminder-body">
+                  <div className="reminder-title">{r.title}</div>
+                  <div className="reminder-meta">{r.message}</div>
+                  <div className="reminder-due">Due: {r.dueDate ? fmt(r.dueDate) : "—"} · {r.type}</div>
+                </div>
+                <div className="reminder-foot">
+                  <span className={`badge ${r.status === "overdue" ? "b-emg" : "b-wait"}`}>{r.status}</span>
+                  <button className="btn btn-sm btn-ghost" onClick={async () => {
+                    try {
+                      await sendReminder({ reminderIds: [r.id] });
+                      toast("Reminder email sent", "success");
+                      setServerReminders(await syncReminders());
+                    } catch (err) { toast(err.message, "error"); }
+                  }}>📧 Email</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -4096,17 +4200,22 @@ function SettingsPage() {
   const { db, saveDB, toast, user } = useApp();
   const [settings, setSettings] = useState({ ...db.clinicSettings });
   const [tab, setTab] = useState("clinic");
+  const [pwdForm, setPwdForm] = useState({ current: "", next: "", confirm: "" });
   const save = () => {
     db.clinicSettings = settings;
     saveDB();
     toast("Settings saved!", "success");
   };
-  const deleteStaff = (u) => {
+  const deleteStaff = async (u) => {
     if (u.id === user?.id) { toast("You cannot delete your own account while logged in.", "error"); return; }
     if (!window.confirm(`Delete staff member ${u.name}?`)) return;
-    db.users = db.users.filter(x => x.id !== u.id);
-    saveDB();
-    toast("Staff member deleted.", "success");
+    try {
+      await apiDeleteUser(u.id);
+      db.users = db.users.filter(x => x.id !== u.id);
+      toast("Staff member deleted.", "success");
+    } catch (err) {
+      toast(err.message || "Could not delete user", "error");
+    }
   };
 
   return (
@@ -4133,12 +4242,21 @@ function SettingsPage() {
                     <div style={{ fontSize: 12, color: "var(--txt3)", marginTop: 2 }}>Clinic Logo</div>
                     <label className="btn btn-ghost btn-sm" style={{ marginTop: 8 }}>
                       📷 Upload Logo
-                      <input type="file" accept="image/*" style={{ display: "none" }} onChange={(e) => {
+                      <input type="file" accept="image/*" style={{ display: "none" }} onChange={async (e) => {
                         const file = e.target.files?.[0];
                         if (!file) return;
-                        const reader = new FileReader();
-                        reader.onload = () => setSettings({ ...settings, logo: reader.result });
-                        reader.readAsDataURL(file);
+                        if (file.size > 5 * 1024 * 1024) { toast("File must be under 5MB", "error"); return; }
+                        try {
+                          const result = await uploadFile(file);
+                          const url = result?.file?.url || result?.url;
+                          setSettings({ ...settings, logo: url || settings.logo });
+                          toast("Logo uploaded!", "success");
+                        } catch (err) {
+                          const reader = new FileReader();
+                          reader.onload = () => setSettings({ ...settings, logo: reader.result });
+                          reader.readAsDataURL(file);
+                          toast("Stored locally (upload unavailable)", "warning");
+                        }
                       }} />
                     </label>
                   </div>
@@ -4246,24 +4364,30 @@ function SettingsPage() {
               <div>
                 <div className="alert a-info" style={{ marginBottom: 16 }}>🔐 Manage password, session timeouts, and access controls.</div>
                 <div className="inp-row cols2" style={{ marginBottom: 14 }}>
-                  <div className="inp-g"><label className="inp-lbl">Current Password</label><input type="password" className="inp" placeholder="Enter current password" /></div>
+                  <div className="inp-g"><label className="inp-lbl">Current Password</label><input type="password" className="inp" value={pwdForm.current} onChange={e => setPwdForm({ ...pwdForm, current: e.target.value })} placeholder="Enter current password" /></div>
                   <div className="inp-g"></div>
-                  <div className="inp-g"><label className="inp-lbl">New Password</label><input type="password" className="inp" placeholder="Min 8 characters" /></div>
-                  <div className="inp-g"><label className="inp-lbl">Confirm New Password</label><input type="password" className="inp" placeholder="Repeat new password" /></div>
+                  <div className="inp-g"><label className="inp-lbl">New Password</label><input type="password" className="inp" value={pwdForm.next} onChange={e => setPwdForm({ ...pwdForm, next: e.target.value })} placeholder="Min 6 characters" /></div>
+                  <div className="inp-g"><label className="inp-lbl">Confirm New Password</label><input type="password" className="inp" value={pwdForm.confirm} onChange={e => setPwdForm({ ...pwdForm, confirm: e.target.value })} placeholder="Repeat new password" /></div>
                 </div>
                 <div style={{ display: "flex", gap: 10, marginBottom: 20 }}>
-                  <button className="btn btn-ink btn-sm" onClick={() => toast("Password updated!", "success")}>🔐 Update Password</button>
+                  <button className="btn btn-ink btn-sm" onClick={async () => {
+                    if (pwdForm.next !== pwdForm.confirm) { toast("Passwords do not match", "error"); return; }
+                    if (pwdForm.next.length < 6) { toast("Password must be at least 6 characters", "error"); return; }
+                    try {
+                      await changePassword(pwdForm.current, pwdForm.next);
+                      toast("Password updated!", "success");
+                      setPwdForm({ current: "", next: "", confirm: "" });
+                    } catch (err) { toast(err.message || "Could not update password", "error"); }
+                  }}>🔐 Update Password</button>
                 </div>
                 <div style={{ borderTop: "1px solid var(--bdr2)", paddingTop: 16 }}>
                   <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 12 }}>Session Settings</div>
                   <div className="inp-row cols2">
                     <div className="inp-g"><label className="inp-lbl">Auto Logout After (minutes)</label>
-                      <select className="inp"><option>30</option><option>60</option><option>120</option><option>Never</option></select>
+                      <select className="inp" defaultValue="30"><option value="30">30</option><option value="60">60</option><option value="120">120</option></select>
                     </div>
                     <div className="inp-g"><label className="inp-lbl">Two-Factor Authentication</label>
-                      <div style={{ display: "flex", gap: 8, marginTop: 6 }}>
-                        <label style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 13, fontWeight: 600 }}><input type="checkbox" />Enable 2FA via OTP</label>
-                      </div>
+                      <div style={{ display: "flex", gap: 8, marginTop: 6, fontSize: 12, color: "var(--txt3)" }}>Coming soon</div>
                     </div>
                   </div>
                 </div>
@@ -4287,17 +4411,12 @@ function SettingsPage() {
 // ...............................................................................
 
 function SuppliersPage() {
-  const { db, saveDB, toast } = useApp();
+  const { db, saveDB, toast, refreshBootstrap } = useApp();
   const [showModal, setShowModal] = useState(false);
   const [viewInv, setViewInv] = useState(null);
   const [form, setForm] = useState({ vendor: "", item: "", qty: "", unitPrice: "", total: "", date: todayStr(), status: "pending", notes: "" });
 
-  if (!db.supplierPayments) db.supplierPayments = [
-    { id: 1, vendor: "Pharma India", item: "Amoxicillin 250mg - 500 tabs", qty: 500, unitPrice: 7, total: 3500, date: "2026-03-01", status: "paid", notes: "Batch AMX2025C" },
-    { id: 2, vendor: "BioVet", item: "Rabies Vaccine - 30 doses", qty: 30, unitPrice: 320, total: 9600, date: "2026-03-05", status: "paid", notes: "Batch RBV2026A" },
-    { id: 3, vendor: "FluidCare", item: "Normal Saline 500ml - 20 bags", qty: 20, unitPrice: 50, total: 1000, date: "2026-03-10", status: "pending", notes: "" },
-    { id: 4, vendor: "VetPlus", item: "Ivermectin 1% - 10 vials", qty: 10, unitPrice: 110, total: 1100, date: "2026-03-08", status: "paid", notes: "" },
-  ];
+  if (!db.supplierPayments) db.supplierPayments = [];
   const payments = db.supplierPayments || [];
   const totalPaid = payments.filter(p => p.status === "paid").reduce((s, p) => s + p.total, 0);
   const totalPending = payments.filter(p => p.status === "pending").reduce((s, p) => s + p.total, 0);
@@ -4464,7 +4583,7 @@ function CertificatesPage() {
           <div className="card-head">
             <span className="card-title">{CERT_TYPES.find(c => c.id === certType)?.label}</span>
             <div className="page-toolbar-actions">
-              <button className="btn btn-ghost btn-sm" onClick={() => toast("Download as PDF or Print? Save as PDF", "")}>Download PDF</button>
+              <button className="btn btn-ghost btn-sm" onClick={printCert}>Download PDF</button>
               <button className="btn btn-gold btn-sm" onClick={printCert}>Print</button>
             </div>
           </div>
@@ -4588,40 +4707,100 @@ function CertificatesPage() {
 // SYSTEM ADMIN PAGE
 // ...............................................................................
 
-function SystemAdminPage({ initialTab = "users" }) {
-  const { db, saveDB, toast } = useApp();
+function SystemAdminPage({ initialTab = "users", onRefreshBootstrap }) {
+  const { db, saveDB, toast, refreshBootstrap } = useApp();
   const [tab, setTab] = useState(initialTab);
   const [showAdd, setShowAdd] = useState(false);
   const [editUser, setEditUser] = useState(null);
   const [form, setForm] = useState({ name: "", email: "", mobile: "", password: "", role: "doctor", active: true });
   const [userFilter, setUserFilter] = useState("all");
+  const [users, setUsers] = useState(db.users || []);
+  const [serverActivity, setServerActivity] = useState([]);
+  const [backups, setBackups] = useState([]);
+
+  const loadUsers = useCallback(async () => {
+    try {
+      const list = await fetchUsers();
+      setUsers(list || []);
+      db.users = list || [];
+    } catch (err) {
+      toast(err.message || "Could not load users", "error");
+    }
+  }, [db, toast]);
+
+  const loadActivity = useCallback(async () => {
+    try {
+      const data = await fetchActivityLogs({ limit: 50 });
+      setServerActivity(data?.logs || data || []);
+    } catch {
+      setServerActivity([]);
+    }
+  }, []);
+
+  const loadBackups = useCallback(async () => {
+    try {
+      const list = await fetchBackups();
+      setBackups(list || []);
+    } catch (err) {
+      toast(err.message || "Could not load backups", "error");
+    }
+  }, [toast]);
+
+  useEffect(() => {
+    if (tab === "users") loadUsers();
+    if (tab === "activity") loadActivity();
+    if (tab === "backups") loadBackups();
+  }, [tab, loadUsers, loadActivity, loadBackups]);
 
   const ROLE_COLORS = { doctor: "var(--teal)", receptionist: "var(--gold-dim)", admin: "var(--red)", owner: "var(--txt3)" };
   const ROLE_ICONS = { doctor: "👨‍⚕️", receptionist: "👩‍💼", admin: "🛡️", owner: "🏠" };
 
-  const saveUser = () => {
+  const saveUser = async () => {
     if (!form.name || !form.email) { toast("Name and email required", "error"); return; }
-    if (editUser) {
-      db.users = db.users.map(u => u.id === editUser.id ? { ...u, ...form } : u);
-      toast("User updated!", "success");
-    } else {
-      if (db.users.find(u => u.email === form.email)) { toast("Email already exists", "error"); return; }
-      db.users.push({ id: db.users.length + 1, ...form, avatar: form.name.slice(0,2).toUpperCase(), lastLogin: null });
-      toast("User created!", "success");
+    if (!editUser && !form.password) { toast("Password required for new users", "error"); return; }
+    try {
+      if (editUser) {
+        const body = { name: form.name, email: form.email, mobile: form.mobile, role: form.role, active: form.active };
+        if (form.password) body.password = form.password;
+        await apiUpdateUser(editUser.id, body);
+        toast("User updated!", "success");
+      } else {
+        await apiCreateUser({ name: form.name, email: form.email, mobile: form.mobile, password: form.password, role: form.role, active: form.active });
+        toast("User created!", "success");
+      }
+      await loadUsers();
+      setShowAdd(false);
+      setEditUser(null);
+      setForm({ name: "", email: "", mobile: "", password: "", role: "doctor", active: true });
+    } catch (err) {
+      toast(err.message || "Could not save user", "error");
     }
-    saveDB(); setShowAdd(false); setEditUser(null);
-    setForm({ name: "", email: "", mobile: "", password: "", role: "doctor", active: true });
   };
 
-  const toggleActive = (id) => {
-    db.users = db.users.map(u => u.id === id ? { ...u, active: !u.active } : u);
-    saveDB(); toast("User status updated!", "success");
+  const toggleActive = async (u) => {
+    try {
+      await apiUpdateUser(u.id, { name: u.name, email: u.email, mobile: u.mobile, role: u.role, active: !(u.active !== false) });
+      await loadUsers();
+      toast("User status updated!", "success");
+    } catch (err) {
+      toast(err.message || "Could not update user", "error");
+    }
   };
 
-  const sessions = (db.sessions || []);
-  const actLog = [...(db.activityLog || [])].reverse().slice(0, 50);
-  const pendingUsers = db.users.filter(u => u.active === false && (u.role === "doctor" || u.role === "receptionist"));
-  const filteredUsers = db.users.filter(u => {
+  const removeUser = async (u) => {
+    if (!window.confirm(`Delete user ${u.name}?`)) return;
+    try {
+      await apiDeleteUser(u.id);
+      await loadUsers();
+      toast("User deleted", "");
+    } catch (err) {
+      toast(err.message || "Could not delete user", "error");
+    }
+  };
+
+  const actLog = serverActivity.length ? serverActivity : [...(db.activityLog || [])].reverse().slice(0, 50);
+  const pendingUsers = users.filter(u => u.active === false && (u.role === "doctor" || u.role === "receptionist"));
+  const filteredUsers = users.filter(u => {
     if (userFilter === "pending") return u.active === false && (u.role === "doctor" || u.role === "receptionist");
     if (userFilter === "active") return u.active !== false;
     return true;
@@ -4640,10 +4819,10 @@ function SystemAdminPage({ initialTab = "users" }) {
       {/* Stats */}
       <div className="g4" style={{ marginBottom: 22 }}>
         {[
-          { l: "Total Users", v: db.users.length, i: "👥", c: "c1" },
+          { l: "Total Users", v: users.length, i: "👥", c: "c1" },
           { l: "Pending Approval", v: pendingUsers.length, i: "⏳", c: "c2" },
-          { l: "Doctors", v: db.users.filter(u=>u.role==="doctor").length, i: "🩺", c: "c2" },
-          { l: "Pet Owners", v: db.users.filter(u=>u.role==="owner").length, i: "🏠", c: "c4" },
+          { l: "Doctors", v: users.filter(u=>u.role==="doctor").length, i: "🩺", c: "c2" },
+          { l: "Pet Owners", v: users.filter(u=>u.role==="owner").length, i: "🏠", c: "c4" },
         ].map((s, i) => (
           <div key={i} className={`scard ${s.c}`}><div className="sico" style={{ fontSize: 22 }}>{s.i}</div><div className="sval" style={{ fontSize: 30 }}>{s.v}</div><div className="slbl">{s.l}</div></div>
         ))}
@@ -4651,7 +4830,7 @@ function SystemAdminPage({ initialTab = "users" }) {
 
       {/* Tabs */}
       <div className="tabs">
-        {[["users","Users"],["sessions","Sessions"],["roles","Role Permissions"],["activity","Activity Log"]].map(([id,lbl])=>(
+        {[["users","Users"],["sessions","Sessions"],["roles","Role Permissions"],["activity","Activity Log"],["backups","Backups"]].map(([id,lbl])=>(
           <div key={id} className={`tab${tab===id?" on":""}`} onClick={()=>setTab(id)}>{lbl}</div>
         ))}
       </div>
@@ -4685,12 +4864,12 @@ function SystemAdminPage({ initialTab = "users" }) {
                       <td style={{ fontSize: 12 }}>{u.email}</td>
                       <td style={{ fontSize: 12 }}>{u.mobile || "N/A"}</td>
                       <td><span className="badge" style={{ background: ROLE_COLORS[u.role]+"22", color: ROLE_COLORS[u.role], fontSize: 11 }}>{ROLE_ICONS[u.role]} {u.role}</span></td>
-                      <td><span className={`badge ${u.active !== false ? "b-bill" : "b-emg"}`} style={{ cursor: "pointer" }} onClick={() => toggleActive(u.id)}>{u.active !== false ? "✓ Active" : (u.role === "doctor" || u.role === "receptionist" ? "⏳ Pending" : "✕ Disabled")}</span></td>
+                      <td><span className={`badge ${u.active !== false ? "b-bill" : "b-emg"}`} style={{ cursor: "pointer" }} onClick={() => toggleActive(u)}>{u.active !== false ? "✓ Active" : (u.role === "doctor" || u.role === "receptionist" ? "⏳ Pending" : "✕ Disabled")}</span></td>
                       <td style={{ fontSize: 11, color: "var(--txt3)", fontFamily: "'JetBrains Mono',monospace" }}>{u.lastLogin ? new Date(u.lastLogin).toLocaleDateString("en-IN") : "Never"}</td>
                       <td>
                         <div style={{ display: "flex", gap: 5 }}>
                           <button className="btn btn-ghost btn-xs" onClick={() => { setEditUser(u); setForm({ name: u.name, email: u.email, mobile: u.mobile||"", password: "", role: u.role, active: u.active !== false }); setShowAdd(true); }}>✏️ Edit</button>
-                          <button className="btn btn-ghost btn-xs" style={{ color: "var(--red)" }} onClick={() => { if(window.confirm(`Delete user ${u.name}?`)) { db.users = db.users.filter(x=>x.id!==u.id); saveDB(); toast("User deleted",""); } }}>🗑️</button>
+                          <button className="btn btn-ghost btn-xs" style={{ color: "var(--red)" }} onClick={() => removeUser(u)}>🗑️</button>
                         </div>
                       </td>
                     </tr>
@@ -4732,7 +4911,7 @@ function SystemAdminPage({ initialTab = "users" }) {
               <div style={{ padding: "14px 16px", background: "var(--white)", borderRadius: 10, border: "1px solid var(--bdr2)" }}>
                 <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 6 }}>🔐 Token Management</div>
                 <div style={{ fontSize: 12, color: "var(--txt2)", marginBottom: 10 }}>Invalidate all sessions and force re-login for all users.</div>
-                <button className="btn btn-red btn-sm" onClick={() => { localStorage.removeItem("rpc_token"); toast("All sessions cleared!", "success"); setTimeout(() => window.location.reload(), 1000); }}>⚠️ Invalidate All Sessions</button>
+                <button className="btn btn-red btn-sm" onClick={() => { clearStoredToken(); toast("Signed out on this device", "success"); setTimeout(() => window.location.reload(), 1000); }}>Sign Out This Device</button>
               </div>
             </div>
           </div>
@@ -4791,7 +4970,16 @@ function SystemAdminPage({ initialTab = "users" }) {
           <div className="card">
             <div className="card-head">
               <span className="card-title">Activity Log</span>
-              <button className="btn btn-ghost btn-sm" onClick={() => { db.activityLog = []; saveDB(); toast("Log cleared",""); }}>Clear Log</button>
+              <button className="btn btn-ghost btn-sm" onClick={async () => {
+                if (!window.confirm("Clear all server activity logs?")) return;
+                try {
+                  await clearActivityLogs();
+                  await loadActivity();
+                  toast("Activity log cleared", "");
+                } catch (err) {
+                  toast(err.message || "Could not clear log", "error");
+                }
+              }}>Clear Log</button>
             </div>
             {actLog.length === 0 ? (
               <div style={{ padding: 32, textAlign: "center", color: "var(--txt3)" }}>No activity recorded yet. Actions like login, save, and inventory changes will appear here.</div>
@@ -4812,6 +5000,74 @@ function SystemAdminPage({ initialTab = "users" }) {
                 </table>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {tab === "backups" && (
+        <div className="fu">
+          <div className="card">
+            <div className="card-head">
+              <span className="card-title">Database Backups</span>
+              <div className="page-toolbar-actions">
+                <button className="btn btn-ghost btn-sm" onClick={async () => {
+                  try {
+                    await downloadBackupExport();
+                    toast("Backup downloaded!", "success");
+                  } catch (err) { toast(err.message, "error"); }
+                }}>Download Current</button>
+                <button className="btn btn-gold btn-sm" onClick={async () => {
+                  try {
+                    await createBackup(`manual-${todayStr()}`);
+                    await loadBackups();
+                    toast("Backup created!", "success");
+                  } catch (err) { toast(err.message, "error"); }
+                }}>Create Backup</button>
+                <label className="btn btn-ghost btn-sm" style={{ cursor: "pointer" }}>
+                  Restore from file
+                  <input type="file" accept=".json,application/json" style={{ display: "none" }} onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (!file || !window.confirm("Restore will overwrite current data. Continue?")) return;
+                    try {
+                      await restoreBackupUpload(file);
+                      if (onRefreshBootstrap) await onRefreshBootstrap();
+                      toast("Restore complete!", "success");
+                    } catch (err) { toast(err.message, "error"); }
+                  }} />
+                </label>
+              </div>
+            </div>
+            <div className="tbl-wrap">
+              <table>
+                <thead><tr><th>Label</th><th>Rows</th><th>Created</th><th>Actions</th></tr></thead>
+                <tbody>
+                  {backups.map((b) => (
+                    <tr key={b.id}>
+                      <td>{b.label}</td>
+                      <td>{b.rowCount}</td>
+                      <td>{b.createdAt ? fmt(b.createdAt) : "—"}</td>
+                      <td>
+                        <button className="btn btn-ghost btn-xs" style={{ marginRight: 6 }} onClick={async () => {
+                          try {
+                            await downloadBackupExport(b.id);
+                            toast("Backup downloaded!", "success");
+                          } catch (err) { toast(err.message, "error"); }
+                        }}>Download</button>
+                        <button className="btn btn-ghost btn-xs" onClick={async () => {
+                          if (!window.confirm("Restore this backup?")) return;
+                          try {
+                            await restoreBackup(b.id);
+                            if (onRefreshBootstrap) await onRefreshBootstrap();
+                            toast("Restored!", "success");
+                          } catch (err) { toast(err.message, "error"); }
+                        }}>Restore</button>
+                      </td>
+                    </tr>
+                  ))}
+                  {backups.length === 0 && <tr><td colSpan={4} style={{ textAlign: "center", padding: 24, color: "var(--txt3)" }}>No backups yet</td></tr>}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       )}
@@ -4892,15 +5148,28 @@ function OwnerPortal({ page, user }) {
   };
 
   // Walk-in request modal
-  const requestWalkIn = () => {
+  const requestWalkIn = async () => {
     if (!walkPetId || !walkReason) { toast("Select a pet and describe the issue", "error"); return; }
     const pet = db.pets.find(p => p.id === parseInt(walkPetId));
     const caseNum = genCase(db);
-    db.visits.push({ id: db.visits.length + 1, petId: parseInt(walkPetId), caseNum, date: todayStr(), status: "waiting", reason: walkReason, emergency: false, temp: "", hr: "", rr: "", weight: pet?.weight || 0, diagnosis: "", notes: "", doctorId: 1, source: "owner-portal" });
-    saveDB();
-    toast(`✅ Walk-in registered! Case: ${caseNum}. Please come to the clinic.`, "success");
-    setShowWalkIn(false);
-    setWalkReason("");
+    try {
+      const created = await apiCreateTreatment({
+        petId: parseInt(walkPetId),
+        caseNum,
+        date: todayStr(),
+        status: "waiting",
+        reason: walkReason,
+        emergency: false,
+        weight: pet?.weight || 0,
+        source: "owner-portal",
+      });
+      db.visits.push({ ...created, id: created.id, petId: parseInt(walkPetId), caseNum: created.caseNum || caseNum, date: todayStr(), status: "waiting", reason: walkReason, source: "owner-portal" });
+      toast(`✅ Walk-in registered! Case: ${created.caseNum || caseNum}. Please come to the clinic.`, "success");
+      setShowWalkIn(false);
+      setWalkReason("");
+    } catch (err) {
+      toast(err.message || "Could not register walk-in", "error");
+    }
   };
 
   // Shared modals (rendered once, available across all pages)
@@ -5068,7 +5337,17 @@ function OwnerPortal({ page, user }) {
                 <div className="inp-g"><label className="inp-lbl">Age (years)</label><input className="inp" type="number" value={form?.age || ""} onChange={e => setPetForm({ ...form, age: e.target.value })} /></div>
                 <div className="inp-g"><label className="inp-lbl">Weight (kg)</label><input className="inp" type="number" value={form?.weight || ""} onChange={e => setPetForm({ ...form, weight: e.target.value })} /></div>
               </div>
-              <button className="btn btn-gold" onClick={() => { db.pets = db.pets.map(p => p.id === form.id ? { ...p, ...form, weight: parseFloat(form.weight) || p.weight } : p); saveDB(); toast("Pet updated!", "success"); }}>💾 Save</button>
+              <button className="btn btn-gold" onClick={async () => {
+                try {
+                  const updated = await apiUpdatePet(form.id, { ...form, weight: parseFloat(form.weight) || form.weight });
+                  db.pets = db.pets.map(p => p.id === form.id ? { ...p, ...updated } : p);
+                  toast("Pet updated!", "success");
+                } catch (err) {
+                  db.pets = db.pets.map(p => p.id === form.id ? { ...p, ...form, weight: parseFloat(form.weight) || p.weight } : p);
+                  saveDB();
+                  toast("Pet updated locally", "warning");
+                }
+              }}>💾 Save</button>
             </div>
           </div>
         )}
@@ -5256,18 +5535,29 @@ export default function App() {
   }, [loadSessions]);
 
   const syncDbToServer = useCallback(async (snapshot) => {
-    if (!user || user.role === "owner") return;
+    if (!user) return;
     const token = getStoredToken();
     if (!token) return;
     const resources = toServerResourceMap(snapshot);
+    if (user.role === "owner") {
+      const tasks = (snapshot.plannerTasks || []).map((t) => ({ ...t, userId: user.id }));
+      if (tasks.length) {
+        await apiRequest("/planner_tasks", { method: "PUT", body: JSON.stringify(tasks) }, token);
+      }
+      return;
+    }
     const tables = MUTABLE_TABLES_BY_ROLE[user.role] || [];
 
     await Promise.all(tables.map(async (table) => {
       const rows = resources[table];
       if (!rows) return;
+      let payload = rows;
+      if (table === "planner_tasks") {
+        payload = rows.map((t) => ({ ...t, userId: user.id }));
+      }
       await apiRequest(`/${table}`, {
         method: "PUT",
-        body: JSON.stringify(rows),
+        body: JSON.stringify(payload),
       }, token);
     }));
   }, [user]);
@@ -5396,8 +5686,16 @@ export default function App() {
 
   const canAccess = (pg) => {
     if (!user) return false;
-    return canAccessPage(user.role, pg);
+    return canAccessPage(user.role, pg, db.rolePermissions);
   };
+
+  const refreshBootstrap = useCallback(async () => {
+    const bootstrap = await fetchBootstrap();
+    const nextDb = normalizeDbSnapshot(bootstrap);
+    localStorage.setItem(DB_KEY, JSON.stringify(nextDb));
+    setDB(nextDb);
+    return nextDb;
+  }, []);
 
   if (!user) {
     if (authView === "register") return (
@@ -5458,13 +5756,13 @@ export default function App() {
       case "admin-users":
       case "admin-sessions":
       case "admin-activity":
-        return <SystemAdminPage initialTab={page === "admin-users" ? "users" : page === "admin-sessions" ? "sessions" : page === "admin-activity" ? "activity" : "users"} />;
+        return <SystemAdminPage initialTab={page === "admin-users" ? "users" : page === "admin-sessions" ? "sessions" : page === "admin-activity" ? "activity" : page === "backups" ? "backups" : "users"} onRefreshBootstrap={refreshBootstrap} />;
       case "settings": return <SettingsPage />;
       default: return <Dashboard user={user} setPage={setPageWithDB} />;
     }
   };
 
-  const ctx = { db, saveDB, toast, logActivity, user, createAppointment };
+  const ctx = { db, saveDB, toast, logActivity, user, createAppointment, refreshBootstrap };
 
   return (
     <AppCtx.Provider value={ctx}>

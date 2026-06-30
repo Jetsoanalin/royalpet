@@ -14,6 +14,10 @@ const BACKUP_TABLES = [
   "inventory",
   "invoices",
   "activity_log",
+  "reminders",
+  "role_permissions",
+  "supplier_payments",
+  "planner_tasks",
 ];
 
 // ── Export ─────────────────────────────────────────────────────────────────
@@ -152,4 +156,13 @@ const startScheduler = () => {
   logger.info("[backup] Nightly backup scheduler started (runs at 02:00 AM daily)");
 };
 
-module.exports = { exportSnapshot, saveBackup, restoreSnapshot, listBackups, startScheduler };
+const getBackupSnapshot = async (backupId) => {
+  if (!backupId) return exportSnapshot();
+  const record = await db("backup_logs").where({ id: backupId }).first();
+  if (!record) throw new Error(`Backup #${backupId} not found`);
+  const snapshot = typeof record.snapshot === "string" ? JSON.parse(record.snapshot) : record.snapshot;
+  const totalRows = record.rowCount ?? Object.values(snapshot).reduce((s, rows) => s + (Array.isArray(rows) ? rows.length : 0), 0);
+  return { snapshot, totalRows, label: record.label };
+};
+
+module.exports = { exportSnapshot, getBackupSnapshot, saveBackup, restoreSnapshot, listBackups, startScheduler };

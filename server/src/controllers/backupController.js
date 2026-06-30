@@ -1,6 +1,6 @@
 const ApiError = require("../utils/ApiError");
 const { sendSuccess } = require("../utils/apiResponse");
-const { saveBackup, restoreSnapshot, listBackups, exportSnapshot } = require("../services/backupService");
+const { saveBackup, restoreSnapshot, listBackups, getBackupSnapshot } = require("../services/backupService");
 
 // GET /api/admin/backups — list all saved backups
 const getBackups = async (req, res) => {
@@ -27,10 +27,14 @@ const restoreBackup = async (req, res) => {
   return sendSuccess(res, result, "Database restored successfully");
 };
 
-// GET /api/admin/backups/download — download full snapshot as JSON file
+// GET /api/admin/backups/download — download full snapshot or a saved backup as JSON file
 const downloadBackup = async (req, res) => {
-  const { snapshot, totalRows } = await exportSnapshot();
-  const filename = `royalpet-backup-${new Date().toISOString().split("T")[0]}.json`;
+  const backupId = req.query.id ? Number(req.query.id) : null;
+  const { snapshot, totalRows, label } = await getBackupSnapshot(backupId);
+  const datePart = new Date().toISOString().split("T")[0];
+  const filename = label
+    ? `royalpet-backup-${label}-${datePart}.json`.replace(/[^\w.-]+/g, "-")
+    : `royalpet-backup-${datePart}.json`;
   res.setHeader("Content-Type", "application/json");
   res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
   res.send(JSON.stringify({ exportedAt: new Date().toISOString(), totalRows, snapshot }, null, 2));
