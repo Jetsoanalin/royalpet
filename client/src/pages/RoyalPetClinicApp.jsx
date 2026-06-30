@@ -42,12 +42,19 @@ const GlobalStyles = () => (
     .fi{animation:fadeIn .25s ease forwards}
     .sr{animation:slideRight .3s ease forwards}
     /* Layout */
-    .shell{display:flex;height:100vh;overflow:hidden}
+    .shell{display:flex;height:100vh;overflow:hidden;color-scheme:light}
     .sidebar{width:256px;min-width:256px;background:var(--ink);display:flex;flex-direction:column;transition:width .3s;z-index:200}
     .sidebar.mini{width:64px;min-width:64px}
     .main{flex:1;display:flex;flex-direction:column;overflow:hidden}
-    .topbar{height:60px;background:var(--white);border-bottom:1px solid var(--bdr);display:flex;align-items:center;padding:0 24px;gap:14px;flex-shrink:0;box-shadow:var(--s1)}
-    .content{flex:1;overflow-y:auto;padding:28px;background:var(--canvas)}
+    .topbar{min-height:60px;background:var(--white);border-bottom:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between;padding:8px 24px;gap:12px;flex-shrink:0;box-shadow:var(--s1)}
+    .topbar-left{display:flex;align-items:center;gap:10px;min-width:0;flex:1}
+    .topbar-title{min-width:0;overflow:hidden}
+    .topbar-title-main{font-size:17px;font-weight:700;font-family:'Cormorant Garamond',serif;color:var(--txt);line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .topbar-title-sub{font-size:11px;color:var(--txt3);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .topbar-date-short{display:none}
+    .topbar-right{display:flex;align-items:center;gap:8px;flex-shrink:0;margin-left:auto}
+    .topbar-actions{display:flex;align-items:center;gap:6px;flex-shrink:0}
+    .content{flex:1;overflow-y:auto;overflow-x:hidden;padding:28px;background:var(--canvas);-webkit-overflow-scrolling:touch}
     /* Sidebar */
     .s-logo{padding:18px 16px;border-bottom:1px solid rgba(255,255,255,.07);display:flex;align-items:center;gap:11px;cursor:default}
     .s-logo-icon{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--gold),var(--gold-lt));display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
@@ -165,7 +172,8 @@ const GlobalStyles = () => (
     .a-ok{background:var(--grn-bg);border-color:#80d0a0;color:#0a4a20}
     .a-info{background:var(--blu-bg);border-color:#90b8e8;color:#0a3060}
     /* Search */
-    .srch{position:relative;flex:1;max-width:360px}
+      .srch{position:relative;width:280px;max-width:360px;flex-shrink:1}
+    .srch-mobile-btn{display:none}
     .srch-inp{width:100%;padding:8px 14px 8px 36px;border:1.5px solid var(--bdr);border-radius:8px;font-size:13px;font-family:'Plus Jakarta Sans',sans-serif;background:var(--canvas);outline:none;transition:all .18s}
     .srch-inp:focus{border-color:var(--ink-soft);background:var(--white);box-shadow:0 0 0 3px rgba(26,51,71,.06)}
     .srch-ic{position:absolute;left:11px;top:50%;transform:translateY(-50%);font-size:14px;color:var(--txt4);pointer-events:none}
@@ -174,7 +182,8 @@ const GlobalStyles = () => (
     .pcard:hover{border-color:var(--gold);box-shadow:var(--s2);transform:translateY(-1px)}
     .pava{width:58px;height:58px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0;border:2px solid var(--bdr)}
     /* Topbar user */
-    .tu{display:flex;align-items:center;gap:9px;cursor:pointer;padding:6px 10px;border-radius:8px;transition:background .18s;margin-left:auto}
+    .tu{display:flex;align-items:center;gap:9px;cursor:pointer;padding:6px 10px;border-radius:8px;transition:background .18s}
+    .topbar-user-text{min-width:0}
     .tu:hover{background:var(--bdr3)}
     .tu-ava{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#fff;flex-shrink:0}
     .notif{position:relative}
@@ -258,13 +267,122 @@ const GlobalStyles = () => (
     .divider{height:1px;background:var(--bdr2);margin:16px 0}
     .chip{display:inline-flex;align-items:center;gap:5px;padding:4px 11px;border-radius:20px;font-size:12px;font-weight:600;background:var(--canvas);border:1px solid var(--bdr);cursor:pointer;transition:all .18s}
     .chip:hover,.chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
-    @media(max-width:1100px){.stats-grid{grid-template-columns:repeat(2,1fr)}}
-    @media(max-width:768px){
+    .ph,.page-toolbar{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:22px;flex-wrap:wrap}
+    .page-toolbar>div:first-child,.ph>div:first-child{min-width:0;flex:1}
+    .page-toolbar-actions,.ph-actions{display:flex;gap:8px;flex-wrap:wrap;flex-shrink:0;align-items:center}
+    .g2,.g3,.g4{display:grid;gap:14px}
+    .g2{grid-template-columns:repeat(2,1fr)}
+    .g3{grid-template-columns:repeat(3,1fr)}
+    .g4{grid-template-columns:repeat(4,1fr)}
+    .g-side{display:grid;grid-template-columns:1fr 320px;gap:20px}
+    .g-wide-side{display:grid;grid-template-columns:300px 1fr;gap:20px}
+    .g-consult{display:grid;grid-template-columns:1fr 340px;gap:20px}
+    .g-settings{display:grid;grid-template-columns:230px 1fr;gap:20px}
+    .g-settings-sm{display:grid;grid-template-columns:220px 1fr;gap:20px}
+    .g-cert{display:grid;grid-template-columns:240px 1fr;gap:20px}
+    .g-cert-sign{gap:40px}
+    .q-main{flex:1;min-width:0;overflow:hidden}
+    .inp{min-width:0}
+    .card,.modal,.rx-wrap{max-width:100%}
+    .badge,.case-pill{max-width:100%;overflow-wrap:anywhere}
+    .g-vitals{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+    .g-pets{display:grid;grid-template-columns:repeat(3,1fr);gap:15px}
+    .g-qa{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    .qa-btn{display:flex;flex-direction:column;align-items:center;gap:5px;padding:12px 8px;background:var(--canvas);border:1px solid var(--bdr2);border-radius:10px;cursor:pointer;transition:all .18s;font-family:inherit;color:var(--txt);min-width:0}
+    .qa-btn:hover,.qa-btn:focus-visible{background:var(--qa-color,var(--ink));color:#fff;border-color:var(--qa-color,var(--ink))}
+    .qa-btn span:last-child{font-size:11px;font-weight:700;text-align:center;line-height:1.2;overflow-wrap:anywhere}
+    .g-dash{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px;margin-bottom:18px}
+    .g-dash-2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+    .med-row{display:grid;grid-template-columns:2fr 1fr 1fr 2fr auto;gap:8px;align-items:center;margin-bottom:8px}
+    .med-row-lg{display:grid;grid-template-columns:2.5fr 1fr 1fr 2fr auto;gap:8px;align-items:center;margin-bottom:8px}
+    .inv-row{display:grid;grid-template-columns:3fr 1fr 1fr 1fr auto;gap:8px;margin-bottom:6px}
+    .row-between{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+    .row-end{display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap}
+    .dash-banner{background:linear-gradient(135deg,var(--ink) 0%,var(--ink-soft) 60%,#1a4a5a 100%);border-radius:var(--r-lg);padding:18px 24px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
+    .dash-banner-text{color:#fff;min-width:0;flex:1}
+    .dash-banner-title{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:700;line-height:1.2}
+    .dash-banner-sub{font-size:12px;opacity:.65;margin-top:3px}
+    .dash-banner-actions{display:flex;gap:10px;flex-wrap:wrap}
+    .q-actions{display:flex;gap:6px;flex-wrap:wrap;margin-left:auto;align-items:center;flex-direction:column}
+    .fu{max-width:100%;min-width:0}
+    .main{min-width:0}
+    .card-head{flex-wrap:wrap;gap:8px}
+    .card-head .card-title{min-width:0}
+    .tbl-wrap{-webkit-overflow-scrolling:touch}
+    .tbl-wrap table{min-width:520px}
+    .overflow-wrap{overflow-wrap:anywhere;word-break:break-word}
+    .chip-group-wrap{display:flex;flex-wrap:wrap;gap:6px}
+    .reminder-item{display:flex;flex-wrap:wrap;align-items:flex-start;gap:10px 12px;padding:12px 14px;border:1px solid var(--bdr2);border-radius:var(--r);margin-bottom:10px}
+    .reminder-ava{font-size:24px;flex-shrink:0;line-height:1}
+    .reminder-body{flex:1 1 180px;min-width:0}
+    .reminder-title{font-weight:700;line-height:1.35;overflow-wrap:anywhere;word-break:break-word}
+    .reminder-meta{font-size:12px;color:var(--txt2);margin-top:2px;line-height:1.45;overflow-wrap:anywhere;word-break:break-word}
+    .reminder-due{font-size:12px;color:var(--txt3);margin-top:2px}
+    .reminder-foot{display:flex;flex-wrap:wrap;gap:8px;align-items:center;width:100%}
+    .reminder-btns{display:flex;flex-wrap:wrap;gap:6px}
+    @media(min-width:640px){
+      .reminder-foot{width:auto;margin-left:auto;flex-shrink:0}
+      .reminder-body{flex:1}
+    }
+    @media(max-width:1100px){.stats-grid{grid-template-columns:repeat(2,1fr)}.g-dash{grid-template-columns:1fr 1fr}.g-settings,.g-settings-sm,.g-cert{grid-template-columns:200px 1fr}}
+      @media(max-width:768px){
+      .reminder-foot .btn{flex:1;justify-content:center;min-width:0;white-space:normal}
+      .reminder-btns{flex:1;min-width:0}
       .stats-grid{grid-template-columns:1fr 1fr}
       .content{padding:16px}
-      .topbar{padding:0 12px;gap:8px}
-      .srch{flex:1;min-width:0;margin-left:0!important}
+      .pt{font-size:22px;line-height:1.15}
+      .ps{font-size:12px;word-break:break-word}
+      .ph,.page-toolbar{flex-direction:column;align-items:stretch;margin-bottom:16px}
+      .page-toolbar-actions,.ph-actions{width:100%}
+      .page-toolbar-actions .btn,.ph-actions .btn{flex:1;justify-content:center;min-width:0;white-space:normal;text-align:center}
+      .g2,.g3,.g4,.g-vitals,.g-pets,.g-dash,.g-dash-2,.g-cert-sign{grid-template-columns:1fr!important}
+      .g-side,.g-wide-side,.g-consult,.g-settings,.g-settings-sm,.g-cert{grid-template-columns:1fr!important}
+      .med-row,.med-row-lg,.inv-row{grid-template-columns:1fr!important}
+      .med-row .btn,.med-row-lg .btn,.inv-row .btn{justify-self:start}
+      .dash-banner{padding:14px 16px;flex-direction:column;align-items:stretch}
+      .dash-banner-actions{width:100%}
+      .dash-banner-actions .btn{flex:1;justify-content:center}
+      .q-item{flex-wrap:wrap;align-items:flex-start}
+      .q-actions{width:100%;margin-left:0;margin-top:8px;justify-content:flex-start;flex-direction:row}
+      .card-head{padding:12px 14px}
+      .card-body{padding:14px}
+      .m-head,.m-body{padding-left:16px;padding-right:16px}
+      .m-foot{padding:12px 16px 18px;flex-wrap:wrap}
+      .m-foot .btn{flex:1;min-width:0;justify-content:center;white-space:normal}
+      .tabs{overflow-x:auto;flex-wrap:nowrap;-webkit-overflow-scrolling:touch;max-width:100%}
+      .tab{flex-shrink:0;padding:8px 12px;font-size:12px}
+      .pcard{flex-wrap:wrap}
+      .scard{padding:16px}
+      .sval{font-size:28px}
+      .rx-hd,.rx-bd,.rx-ft{padding-left:14px;padding-right:14px}
+      .toast-wrap{left:12px;right:12px;bottom:12px}
+      .toast{max-width:none}
+      table{font-size:12px}
+      thead th,tbody td{padding:8px 10px;white-space:nowrap}
+      .tbl-wrap table{min-width:480px}
+      .cal-cell{font-size:11px}
+      .q-ava{width:36px;height:36px;font-size:16px}
+      .inp-row.cols2,.inp-row.cols3{grid-template-columns:1fr!important}
+      .g-qa{grid-template-columns:1fr 1fr}
+      .row-between,.row-end{flex-direction:column;align-items:stretch}
+      .row-between .btn,.row-end .btn{width:100%;justify-content:center}
+      .topbar{padding:8px 12px;gap:8px}
+      .topbar-left{gap:8px}
+      .topbar-title-main{font-size:15px}
+      .topbar-title-sub{font-size:10px}
+      .topbar-date-full{display:none}
+      .topbar-date-short{display:block}
+      .topbar-user-text{display:none}
+      .tu{padding:4px;gap:0}
+      .tu .topbar-chevron{display:none}
+      .srch{display:none}
+      .srch-mobile-btn{display:flex!important}
+      .srch-mobile-panel{position:absolute;top:calc(100% + 4px);left:12px;right:12px;z-index:650;background:var(--white);border-radius:10px;box-shadow:var(--s3);border:1px solid var(--bdr);padding:8px}
+      .btn{white-space:normal;max-width:100%}
       .modal,.modal-lg{width:96%!important;max-width:96%!important;margin:12px}
+      .rx-wrap{overflow-x:auto}
+      .pcard .pava{flex-shrink:0}
+      .overflow-wrap,.tl-t,.tl-box{overflow-wrap:anywhere;word-break:break-word}
       .cols2,.cols3{grid-template-columns:1fr!important}
       .sidebar{position:fixed;left:0;top:0;bottom:0;transform:translateX(-100%);transition:transform .3s;box-shadow:var(--s4)}
       .sidebar.mobile-open{transform:translateX(0)}
@@ -272,7 +390,15 @@ const GlobalStyles = () => (
       .sidebar-backdrop.show{display:block}
       .hamburger{display:flex!important}
     }
-    .hamburger{display:none;align-items:center;justify-content:center}
+    @media(max-width:480px){
+      .stats-grid{grid-template-columns:1fr}
+      .g-qa{grid-template-columns:1fr}
+      .sval{font-size:24px}
+    }
+    .hamburger{display:none;align-items:center;justify-content:center;flex-shrink:0;color:var(--ink);border-color:var(--bdr);background:var(--white)}
+    .hamburger:hover{background:var(--bdr3);color:var(--ink)}
+    .hamburger-lines{display:flex;flex-direction:column;justify-content:center;gap:4px;width:18px;height:14px}
+    .hamburger-lines span{display:block;height:2px;width:100%;background:currentColor;border-radius:1px}
   `}</style>
 );
 
@@ -385,7 +511,7 @@ const MED_DEFAULTS = {
   [normalizeMedName("Inj. Furosemide")]: { dose: "1 mg/kg", instruction: "Injection" },
   [normalizeMedName("Inj. Torsemide")]: { dose: "0.2 mg/kg", instruction: "Injection" },
   [normalizeMedName("Normal Saline (NS)")]: { dose: "As directed", instruction: "IV" },
-  [normalizeMedName("Lactated Ringer?Ts Solution (RL)")]: { dose: "As directed", instruction: "IV" },
+  [normalizeMedName("Lactated Ringer's Solution (RL)")]: { dose: "As directed", instruction: "IV" },
   [normalizeMedName("Lactated Ringer's Solution (RL)")]: { dose: "As directed", instruction: "IV" },
   [normalizeMedName("DNS")]: { dose: "As directed", instruction: "IV" },
   [normalizeMedName("D10")]: { dose: "As directed", instruction: "IV" },
@@ -448,9 +574,11 @@ const openPrescriptionPrint = ({ clinic, pet, owner, visit, medicines }) => {
   </div>
   ${vitals ? `<div style="font-size:12px;margin-bottom:8px"><strong>Vitals:</strong> ${vitals}</div>` : ""}
   ${visit?.diagnosis ? `<div style="font-size:12px;margin-bottom:8px"><strong>Diagnosis:</strong> ${visit.diagnosis}</div>` : ""}
+  <div className="tbl-wrap">
   <table><thead><tr><th>#</th><th>Medicine</th><th>Dose</th><th>Duration</th><th>Instruction</th></tr></thead><tbody>
   ${rows || `<tr><td colspan="5" style="text-align:center">No medicines</td></tr>`}
   </tbody></table>
+  </div>
   <div class="sig">
     <div style="border-top:1px solid #000;padding-top:6px;display:inline-block;min-width:220px;text-align:center">${clinic.signature || clinic.doctor || "Veterinarian"}</div>
     <div style="font-size:11px;margin-top:4px">Authorized Signature</div>
@@ -520,7 +648,7 @@ const initDB = () => {
     sessions: [],
     activityLog: [],
     nextVisitNum: { "2026-03-11": 3 },
-    clinicSettings: { name: "Royal Pet Clinic", doctor: "Dr. Rajan Mehta", signature: "Dr. Rajan Mehta, BVSc & AH", phone: "+91 80 1234 5678", email: "info@royalpetclinic.in", address: "123, MG Road, Bangalore - 560001", regNum: "VET/2020/BLR/0042", consultFee: 500, currency: ",", reminderVaccDays: 7, reminderFollowupDays: 1, reminderTime: "09:00", reminderChannel: "Both", reminderWhatsapp: "+91 80 1234 5678", reminderVaccTemplate: "Dear {owner_name}, this is a reminder that {pet_name}'s {vaccine_name} vaccination is due on {due_date}. Please visit {clinic_name} to schedule an appointment. 🐾", reminderFollowupTemplate: "Dear {owner_name}, your appointment for {pet_name} is scheduled for {apt_date} at {apt_time} at {clinic_name}. See you soon! 🐾", vetReg: "VET/2020/BLR/0042", specialization: "Small Animals & Exotic Pets", experience: 12, doctorBio: "Specialized in small animal medicine, surgery, and exotic pet care. 12+ years of clinical experience in Bangalore.", taxRate: 0, invoicePrefix: "INV", paymentMethods: ["Cash","UPI","Card","Online"], showTax: false, logo: "" },
+    clinicSettings: { name: "Royal Pet Clinic", doctor: "Dr. Rajan Mehta", signature: "Dr. Rajan Mehta, BVSc & AH", phone: "+91 80 1234 5678", email: "info@royalpetclinic.in", address: "123, MG Road, Bangalore - 560001", regNum: "VET/2020/BLR/0042", consultFee: 500, currency: "₹", reminderVaccDays: 7, reminderFollowupDays: 1, reminderTime: "09:00", reminderChannel: "Both", reminderWhatsapp: "+91 80 1234 5678", reminderVaccTemplate: "Dear {owner_name}, this is a reminder that {pet_name}'s {vaccine_name} vaccination is due on {due_date}. Please visit {clinic_name} to schedule an appointment. 🐾", reminderFollowupTemplate: "Dear {owner_name}, your appointment for {pet_name} is scheduled for {apt_date} at {apt_time} at {clinic_name}. See you soon! 🐾", vetReg: "VET/2020/BLR/0042", specialization: "Small Animals & Exotic Pets", experience: 12, doctorBio: "Specialized in small animal medicine, surgery, and exotic pet care. 12+ years of clinical experience in Bangalore.", taxRate: 0, invoicePrefix: "INV", paymentMethods: ["Cash","UPI","Card","Online"], showTax: false, logo: "" },
   };
   localStorage.setItem(DB_KEY, JSON.stringify(db));
   return db;
@@ -977,8 +1105,11 @@ function Topbar({ page, setPage, user, onLogout, onSwitchUser, globalSearch, set
   const [showSessions, setShowSessions] = useState(false);
   const [readNotifs, setReadNotifs] = useState(() => { try { return JSON.parse(localStorage.getItem("rpc_read_notifs") || "[]"); } catch { return []; } });
   const [showSearch, setShowSearch] = useState(false);
+  const [showMobileSearch, setShowMobileSearch] = useState(false);
   const searchResults = useMemo(() => runGlobalSearch(db, globalSearch), [db, globalSearch]);
   const now = new Date();
+  const dateLong = now.toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+  const dateShort = now.toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short", year: "numeric" });
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -1033,25 +1164,146 @@ function Topbar({ page, setPage, user, onLogout, onSwitchUser, globalSearch, set
 
   return (
     <div className="topbar" style={{ position: "relative" }}>
-      <button className="btn-ico hamburger" onClick={onMenuToggle} aria-label="Menu">☰</button>
-      <div>
-        <div style={{ fontSize: 16, fontWeight: 700, fontFamily: "'Cormorant Garamond',serif" }}>{TITLES[page] || page}</div>
-        <div style={{ fontSize: 11, color: "var(--txt3)" }}>{now.toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}</div>
+      <div className="topbar-left">
+        <button className="btn-ico hamburger" onClick={onMenuToggle} aria-label="Menu">
+          <span className="hamburger-lines" aria-hidden="true"><span /><span /><span /></span>
+        </button>
+        <div className="topbar-title">
+          <div className="topbar-title-main">{TITLES[page] || page}</div>
+          <div className="topbar-title-sub topbar-date-full">{dateLong}</div>
+          <div className="topbar-title-sub topbar-date-short">{dateShort}</div>
+        </div>
       </div>
-      {user.role !== "owner" && (
-        <div className="srch" style={{ marginLeft: 20, position: "relative" }}>
-          <span className="srch-ic">🔍</span>
-          <input className="srch-inp" placeholder="Search pet, owner, case number..." value={globalSearch}
-            onChange={e => { setGlobalSearch(e.target.value); setShowSearch(true); }}
-            onFocus={() => setShowSearch(true)}
-            onBlur={() => setTimeout(() => setShowSearch(false), 200)} />
-          {showSearch && globalSearch.trim().length >= 2 && (
-            <div style={{ position: "absolute", top: "calc(100% + 6px)", left: 0, right: 0, background: "var(--white)", borderRadius: 10, boxShadow: "var(--s3)", border: "1px solid var(--bdr)", zIndex: 600, maxHeight: 280, overflowY: "auto" }}>
+
+      <div className="topbar-right">
+        {user.role !== "owner" && (
+          <div className="srch">
+            <span className="srch-ic">🔍</span>
+            <input className="srch-inp" placeholder="Search pet, owner, case number..." value={globalSearch}
+              onChange={e => { setGlobalSearch(e.target.value); setShowSearch(true); }}
+              onFocus={() => setShowSearch(true)}
+              onBlur={() => setTimeout(() => setShowSearch(false), 200)} />
+            {showSearch && globalSearch.trim().length >= 2 && (
+              <div style={{ position: "absolute", top: "calc(100% + 6px)", left: 0, right: 0, background: "var(--white)", borderRadius: 10, boxShadow: "var(--s3)", border: "1px solid var(--bdr)", zIndex: 600, maxHeight: 280, overflowY: "auto" }}>
+                {searchResults.length === 0 ? (
+                  <div style={{ padding: 14, fontSize: 12, color: "var(--txt3)", textAlign: "center" }}>No results found</div>
+                ) : searchResults.map((r) => (
+                  <div key={`${r.type}-${r.id}`} onMouseDown={() => { setShowSearch(false); setShowMobileSearch(false); setGlobalSearch(""); if (r.page) setPage(r.page); if (r.visitId && setConsultVisit) { const visit = db.visits.find(v => v.id === r.visitId); if (visit) setConsultVisit(visit); } }}
+                    style={{ padding: "10px 12px", borderBottom: "1px solid var(--bdr3)", cursor: "pointer" }}>
+                    <div style={{ fontSize: 13, fontWeight: 700 }}>{r.type === "pet" ? "🐾" : r.type === "owner" ? "👤" : "📋"} {r.label}</div>
+                    <div style={{ fontSize: 11, color: "var(--txt3)", marginTop: 2 }}>{r.sub}</div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        <div className="topbar-actions">
+          {user.role !== "owner" && (
+            <button
+              type="button"
+              className="btn-ico srch-mobile-btn"
+              aria-label="Search"
+              onClick={() => { setShowMobileSearch(!showMobileSearch); setShowNotif(false); setShowUserMenu(false); }}
+            >
+              🔍
+            </button>
+          )}
+          <div style={{ position: "relative" }}>
+            <button className="btn-ico notif" onClick={() => { setShowNotif(!showNotif); setShowUserMenu(false); setShowSessions(false); setShowMobileSearch(false); }}>
+              <span style={{ fontSize: 16 }}>🔔</span>
+              {totalNotifs > 0 && <span className="ndot" />}
+            </button>
+            {showNotif && (
+              <div style={{ position: "absolute", top: "calc(100% + 8px)", right: 0, background: "var(--white)", borderRadius: "var(--r-lg)", boxShadow: "var(--s3)", border: "1px solid var(--bdr)", width: 320, maxWidth: "calc(100vw - 24px)", zIndex: 500, animation: "fadeUp .2s" }}>
+                <div style={{ padding: "14px 16px 10px", borderBottom: "1px solid var(--bdr2)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <div><div style={{ fontWeight: 800, fontSize: 13 }}>🔔 Notifications</div><div style={{ fontSize: 11, color: "var(--txt3)", marginTop: 1 }}>{unreadNotifications.length} alerts</div></div>
+                  {totalNotifs > 0 && <span className="badge b-emg" style={{ fontSize: 10 }}>{totalNotifs} new</span>}
+                </div>
+                {unreadNotifications.length === 0 ? (
+                  <div style={{ padding: 24, textAlign: "center", color: "var(--txt3)", fontSize: 13 }}>✅ All clear - no notifications</div>
+                ) : unreadNotifications.map((n, i) => (
+                  <div key={i} onClick={() => openNotification(n)} style={{ display: "flex", gap: 10, padding: "10px 14px", borderBottom: "1px solid var(--bdr3)", background: n.type === "error" ? "var(--red-bg)" : n.type === "warning" ? "var(--org-bg)" : "transparent", cursor: "pointer" }}>
+                    <span style={{ fontSize: 18, flexShrink: 0 }}>{n.icon}</span>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 12, fontWeight: 600, color: n.type === "error" ? "var(--red)" : n.type === "warning" ? "var(--org)" : "var(--txt)" }}>{n.msg}</div>
+                      <div style={{ fontSize: 10, color: "var(--txt3)", marginTop: 2 }}>{n.time}</div>
+                    </div>
+                    <button className="btn btn-ghost btn-xs" onClick={(e) => { e.stopPropagation(); openNotification(n); }} style={{ alignSelf: "center", flexShrink: 0 }}>{n.action || "Open →"}</button>
+                  </div>
+                ))}
+                <div style={{ padding: "10px 14px", borderTop: "1px solid var(--bdr2)", textAlign: "center" }}>
+                  <button className="btn btn-ghost btn-xs" style={{ width: "100%" }} onClick={() => { markAllRead(); setShowNotif(false); }}>Mark all as read</button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div style={{ position: "relative" }}>
+            <div className="tu" onClick={() => { setShowUserMenu(!showUserMenu); setShowNotif(false); setShowSessions(false); setShowMobileSearch(false); }}>
+              <div className="tu-ava" style={{ background: ROLE_COLORS[user.role] || "#1a3347" }}>{user.avatar}</div>
+              <div className="topbar-user-text">
+                <div style={{ fontSize: 13, fontWeight: 700, lineHeight: 1.2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 140 }}>{user.name}</div>
+                <div style={{ fontSize: 11, color: "var(--txt3)", textTransform: "capitalize" }}>{ROLE_LABELS[user.role] || user.role}</div>
+              </div>
+              <span className="topbar-chevron" style={{ fontSize: 12, color: "var(--txt3)", marginLeft: 2 }}>▾</span>
+            </div>
+            {showUserMenu && (
+              <div style={{ position: "absolute", top: "calc(100% + 8px)", right: 0, background: "var(--white)", borderRadius: "var(--r-lg)", boxShadow: "var(--s3)", border: "1px solid var(--bdr)", width: 240, maxWidth: "calc(100vw - 24px)", zIndex: 500, animation: "fadeUp .2s" }}>
+                <div style={{ padding: "14px 16px 12px", borderBottom: "1px solid var(--bdr2)", background: "var(--canvas)" }}>
+                  <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+                    <div style={{ width: 40, height: 40, borderRadius: "50%", background: ROLE_COLORS[user.role] || "#1a3347", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, fontWeight: 800, color: "#fff" }}>{user.avatar}</div>
+                    <div>
+                      <div style={{ fontWeight: 800, fontSize: 14 }}>{user.name}</div>
+                      <div style={{ fontSize: 11, color: "var(--txt3)" }}>{user.email}</div>
+                      <span style={{ fontSize: 10, background: ROLE_COLORS[user.role]+"22", color: ROLE_COLORS[user.role], padding: "1px 7px", borderRadius: 10, fontWeight: 700, marginTop: 3, display: "inline-block", textTransform: "capitalize" }}>{ROLE_LABELS[user.role] || user.role}</span>
+                    </div>
+                  </div>
+                </div>
+                {[
+                  { icon: "👤", label: "My Profile", action: null },
+                  { icon: "🔒", label: "Change Password", action: null },
+                  { icon: "⚙️", label: "Preferences", action: null },
+                  { icon: "🔄", label: "Switch Account", action: () => { onSwitchUser(null); setShowUserMenu(false); } },
+                ].map((item, i) => (
+                  <div key={i} onClick={item.action} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 16px", cursor: item.action ? "pointer" : "default", fontSize: 13, color: "var(--txt)", transition: "background .15s", borderBottom: "1px solid var(--bdr3)" }}
+                    onMouseEnter={e => item.action && (e.currentTarget.style.background = "var(--bdr3)")}
+                    onMouseLeave={e => item.action && (e.currentTarget.style.background = "transparent")}>
+                    <span style={{ fontSize: 15 }}>{item.icon}</span>
+                    <span style={{ fontWeight: 500 }}>{item.label}</span>
+                    {!item.action && <span style={{ marginLeft: "auto", fontSize: 10, color: "var(--txt4)" }}>Soon</span>}
+                  </div>
+                ))}
+                <div style={{ padding: "6px 10px 8px" }}>
+                  <button onClick={() => { setShowUserMenu(false); onLogout(); }} className="btn btn-red btn-sm" style={{ width: "100%", justifyContent: "center" }}>⏻ Sign Out</button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {showMobileSearch && user.role !== "owner" && (
+        <div className="srch-mobile-panel">
+          <div className="srch" style={{ width: "100%", maxWidth: "none" }}>
+            <span className="srch-ic">🔍</span>
+            <input
+              className="srch-inp"
+              autoFocus
+              placeholder="Search pet, owner, case number..."
+              value={globalSearch}
+              onChange={e => { setGlobalSearch(e.target.value); setShowSearch(true); }}
+              onFocus={() => setShowSearch(true)}
+            />
+          </div>
+          {globalSearch.trim().length >= 2 && (
+            <div style={{ marginTop: 8, maxHeight: 240, overflowY: "auto" }}>
               {searchResults.length === 0 ? (
-                <div style={{ padding: 14, fontSize: 12, color: "var(--txt3)", textAlign: "center" }}>No results found</div>
+                <div style={{ padding: 12, fontSize: 12, color: "var(--txt3)", textAlign: "center" }}>No results found</div>
               ) : searchResults.map((r) => (
-                <div key={`${r.type}-${r.id}`} onMouseDown={() => { setShowSearch(false); setGlobalSearch(""); if (r.page) setPage(r.page); if (r.visitId && setConsultVisit) { const visit = db.visits.find(v => v.id === r.visitId); if (visit) setConsultVisit(visit); } }}
-                  style={{ padding: "10px 12px", borderBottom: "1px solid var(--bdr3)", cursor: "pointer" }}>
+                <div key={`m-${r.type}-${r.id}`} onMouseDown={() => { setShowSearch(false); setShowMobileSearch(false); setGlobalSearch(""); if (r.page) setPage(r.page); if (r.visitId && setConsultVisit) { const visit = db.visits.find(v => v.id === r.visitId); if (visit) setConsultVisit(visit); } }}
+                  style={{ padding: "10px 12px", borderBottom: "1px solid var(--bdr3)", cursor: "pointer", borderRadius: 8 }}>
                   <div style={{ fontSize: 13, fontWeight: 700 }}>{r.type === "pet" ? "🐾" : r.type === "owner" ? "👤" : "📋"} {r.label}</div>
                   <div style={{ fontSize: 11, color: "var(--txt3)", marginTop: 2 }}>{r.sub}</div>
                 </div>
@@ -1060,85 +1312,9 @@ function Topbar({ page, setPage, user, onLogout, onSwitchUser, globalSearch, set
           )}
         </div>
       )}
-      <div style={{ display: "flex", gap: 8, marginLeft: 16, alignItems: "center" }}>
-        {/* Notifications bell */}
-        <div style={{ position: "relative" }}>
-          <button className="btn-ico notif" onClick={() => { setShowNotif(!showNotif); setShowUserMenu(false); setShowSessions(false); }}>
-            <span style={{ fontSize: 16 }}>🔔</span>
-            {totalNotifs > 0 && <span className="ndot" />}
-          </button>
-          {showNotif && (
-            <div style={{ position: "absolute", top: "calc(100% + 8px)", right: 0, background: "var(--white)", borderRadius: "var(--r-lg)", boxShadow: "var(--s3)", border: "1px solid var(--bdr)", width: 320, zIndex: 500, animation: "fadeUp .2s" }}>
-              <div style={{ padding: "14px 16px 10px", borderBottom: "1px solid var(--bdr2)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <div><div style={{ fontWeight: 800, fontSize: 13 }}>🔔 Notifications</div><div style={{ fontSize: 11, color: "var(--txt3)", marginTop: 1 }}>{unreadNotifications.length} alerts</div></div>
-                {totalNotifs > 0 && <span className="badge b-emg" style={{ fontSize: 10 }}>{totalNotifs} new</span>}
-              </div>
-              {unreadNotifications.length === 0 ? (
-                <div style={{ padding: 24, textAlign: "center", color: "var(--txt3)", fontSize: 13 }}>✅ All clear - no notifications</div>
-              ) : unreadNotifications.map((n, i) => (
-                <div key={i} onClick={() => openNotification(n)} style={{ display: "flex", gap: 10, padding: "10px 14px", borderBottom: "1px solid var(--bdr3)", background: n.type === "error" ? "var(--red-bg)" : n.type === "warning" ? "var(--org-bg)" : "transparent", cursor: "pointer" }}>
-                  <span style={{ fontSize: 18, flexShrink: 0 }}>{n.icon}</span>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: 12, fontWeight: 600, color: n.type === "error" ? "var(--red)" : n.type === "warning" ? "var(--org)" : "var(--txt)" }}>{n.msg}</div>
-                    <div style={{ fontSize: 10, color: "var(--txt3)", marginTop: 2 }}>{n.time}</div>
-                  </div>
-                  <button className="btn btn-ghost btn-xs" onClick={(e) => { e.stopPropagation(); openNotification(n); }} style={{ alignSelf: "center" }}>{n.action || "Open →"}</button>
-                </div>
-              ))}
-              <div style={{ padding: "10px 14px", borderTop: "1px solid var(--bdr2)", textAlign: "center" }}>
-                <button className="btn btn-ghost btn-xs" style={{ width: "100%" }} onClick={() => { markAllRead(); setShowNotif(false); }}>Mark all as read</button>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-      {/* User menu */}
-      <div style={{ position: "relative" }}>
-        <div className="tu" onClick={() => { setShowUserMenu(!showUserMenu); setShowNotif(false); setShowSessions(false); }}>
-          <div className="tu-ava" style={{ background: ROLE_COLORS[user.role] || "#1a3347" }}>{user.avatar}</div>
-          <div>
-            <div style={{ fontSize: 13, fontWeight: 700, lineHeight: 1.2 }}>{user.name}</div>
-            <div style={{ fontSize: 11, color: "var(--txt3)", textTransform: "capitalize" }}>{ROLE_LABELS[user.role] || user.role}</div>
-          </div>
-          <span style={{ fontSize: 12, color: "var(--txt3)", marginLeft: 2 }}>▾</span>
-        </div>
-        {showUserMenu && (
-          <div style={{ position: "absolute", top: "calc(100% + 8px)", right: 0, background: "var(--white)", borderRadius: "var(--r-lg)", boxShadow: "var(--s3)", border: "1px solid var(--bdr)", width: 240, zIndex: 500, animation: "fadeUp .2s" }}>
-            {/* User info */}
-            <div style={{ padding: "14px 16px 12px", borderBottom: "1px solid var(--bdr2)", background: "var(--canvas)" }}>
-              <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-                <div style={{ width: 40, height: 40, borderRadius: "50%", background: ROLE_COLORS[user.role] || "#1a3347", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, fontWeight: 800, color: "#fff" }}>{user.avatar}</div>
-                <div>
-                  <div style={{ fontWeight: 800, fontSize: 14 }}>{user.name}</div>
-                  <div style={{ fontSize: 11, color: "var(--txt3)" }}>{user.email}</div>
-                  <span style={{ fontSize: 10, background: ROLE_COLORS[user.role]+"22", color: ROLE_COLORS[user.role], padding: "1px 7px", borderRadius: 10, fontWeight: 700, marginTop: 3, display: "inline-block", textTransform: "capitalize" }}>{ROLE_LABELS[user.role] || user.role}</span>
-                </div>
-              </div>
-            </div>
-            {/* Menu items */}
-            {[
-              { icon: "👤", label: "My Profile", action: null },
-              { icon: "🔒", label: "Change Password", action: null },
-              { icon: "⚙️", label: "Preferences", action: null },
-              { icon: "🔄", label: "Switch Account", action: () => { onSwitchUser(null); setShowUserMenu(false); } },
-            ].map((item, i) => (
-              <div key={i} onClick={item.action} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 16px", cursor: item.action ? "pointer" : "default", fontSize: 13, color: "var(--txt)", transition: "background .15s", borderBottom: "1px solid var(--bdr3)" }}
-                onMouseEnter={e => item.action && (e.currentTarget.style.background = "var(--bdr3)")}
-                onMouseLeave={e => item.action && (e.currentTarget.style.background = "transparent")}>
-                <span style={{ fontSize: 15 }}>{item.icon}</span>
-                <span style={{ fontWeight: 500 }}>{item.label}</span>
-                {!item.action && <span style={{ marginLeft: "auto", fontSize: 10, color: "var(--txt4)" }}>Soon</span>}
-              </div>
-            ))}
-            <div style={{ padding: "6px 10px 8px" }}>
-              <button onClick={() => { setShowUserMenu(false); onLogout(); }} className="btn btn-red btn-sm" style={{ width: "100%", justifyContent: "center" }}>⏻ Sign Out</button>
-            </div>
-          </div>
-        )}
-      </div>
-      {/* Click-away overlay */}
-      {(showUserMenu || showNotif || showSessions) && (
-        <div style={{ position: "fixed", inset: 0, zIndex: 400 }} onClick={() => { setShowUserMenu(false); setShowNotif(false); setShowSessions(false); }} />
+
+      {(showUserMenu || showNotif || showSessions || showMobileSearch) && (
+        <div style={{ position: "fixed", inset: 0, zIndex: 400 }} onClick={() => { setShowUserMenu(false); setShowNotif(false); setShowSessions(false); setShowMobileSearch(false); }} />
       )}
     </div>
   );
@@ -1168,7 +1344,7 @@ function AdminDashboard({ setPage }) {
       </div>
 
       {/* KPI Grid */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 14, marginBottom: 20 }}>
+      <div className="g4" style={{ marginBottom: 20 }}>
         {[
           { l: "Total Users", v: db.users.length, sub: `${activeUsers} active`, i: "👥", c: "c1", page: "system-admin" },
           { l: "Active Sessions", v: sessions.length || 1, sub: "Logged in now", i: "🔐", c: "c3", page: "system-admin" },
@@ -1182,7 +1358,7 @@ function AdminDashboard({ setPage }) {
         ))}
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 14, marginBottom: 22 }}>
+      <div className="g4" style={{ marginBottom: 22 }}>
         {[
           { l: "Total Patients", v: db.pets.length, i: "🐾", c: "c1" },
           { l: "Total Visits", v: db.visits.length, i: "🩺", c: "c2" },
@@ -1193,7 +1369,7 @@ function AdminDashboard({ setPage }) {
         ))}
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 20 }}>
+      <div className="g3" style={{ gap: 20 }}>
         {/* Active Sessions */}
         <div className="card">
           <div className="card-head"><span className="card-title">🔐 Active Sessions</span><button className="btn btn-ghost btn-xs" onClick={() => setPage("system-admin")}>Manage →</button></div>
@@ -1202,7 +1378,7 @@ function AdminDashboard({ setPage }) {
             {sessions.map((s, i) => (
               <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 4px", borderBottom: "1px solid var(--bdr3)" }}>
                 <div style={{ width: 30, height: 30, borderRadius: "50%", background: ROLE_COLORS[s.role]||"#1a3347", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 800, color: "#fff", flexShrink: 0 }}>{s.avatar}</div>
-                <div style={{ flex: 1 }}>
+                <div style={{ flex: 1, minWidth: 0 }} className="q-main">
                   <div style={{ fontSize: 12, fontWeight: 700 }}>{s.name}</div>
                   <div style={{ fontSize: 10, color: "var(--txt3)", textTransform: "capitalize" }}>{s.role} · Since {s.loginTime}</div>
                 </div>
@@ -1253,7 +1429,7 @@ function AdminDashboard({ setPage }) {
       {(lowStock.length > 0 || overdueVaccs.length > 0 || pendingPayments.length > 0) && (
         <div style={{ marginTop: 20 }}>
           <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 10 }}>⚠️ System Alerts</div>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12 }}>
+          <div className="g3" style={{ gap: 12 }}>
             {lowStock.slice(0,3).map(i => <div key={i.id} className="alert a-err" style={{ margin: 0 }}>📦 <strong>{i.name}</strong> - {i.stock} {i.unit} left</div>)}
             {overdueVaccs.slice(0,3).map(v => { const p = db.pets.find(pt=>pt.id===v.petId); return <div key={v.id} className="alert a-warn" style={{ margin: 0 }}>💉 {p?.name}: {v.vaccine} overdue</div>; })}
             {pendingPayments.slice(0,3).map(p => <div key={p.id} className="alert a-info" style={{ margin: 0 }}>⏳ {p.vendor} - ₹{p.total} pending</div>)}
@@ -1290,7 +1466,7 @@ function Dashboard({ user, setPage }) {
           <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 26, fontWeight: 700 }}>Welcome back, {user.name.split(" ")[0]}! 🐾</div>
           <div style={{ fontSize: 13, opacity: .7, marginTop: 4 }}>Your pet health portal - {new Date().toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "long" })}</div>
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 14, marginBottom: 20 }}>
+        <div className="g3" style={{ marginBottom: 20 }}>
           {[
             { label: "My Pets", val: ownerPets.length, icon: "🐾", c: "c1", page: "owner-home" },
             { label: "Upcoming Apts", val: myApts.length, icon: "📅", c: "c2", page: "owner-appointments" },
@@ -1303,7 +1479,7 @@ function Dashboard({ user, setPage }) {
         </div>
         {myVaccs.length > 0 && <div className="alert a-warn" style={{ marginBottom: 14 }}>💉 {myVaccs.length} vaccination(s) overdue or due soon. <span style={{ textDecoration: "underline", cursor: "pointer" }} onClick={() => setPage("owner-vaccines")}>View →</span></div>}
         <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 12 }}>My Pets</div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 14 }}>
+        <div className="g2">
           {ownerPets.length ? ownerPets.map(pet => <PetMiniCard key={pet.id} pet={pet} db={db} />) : (
             <div className="card" style={{ padding: 28, textAlign: "center", color: "var(--txt3)", gridColumn: "span 2" }}>
               <div style={{ fontSize: 40 }}>🐾</div><div style={{ marginTop: 10 }}>No pets registered. Contact the clinic.</div>
@@ -1318,7 +1494,7 @@ function Dashboard({ user, setPage }) {
               return (
                 <div key={a.id} style={{ display: "flex", gap: 12, alignItems: "center", padding: "12px 14px", background: "var(--white)", borderRadius: "var(--r)", border: "1px solid var(--bdr2)", marginBottom: 8 }}>
                   <div style={{ fontSize: 26 }}>{pet?.photo}</div>
-                  <div style={{ flex: 1 }}>
+                  <div style={{ flex: 1, minWidth: 0 }} className="q-main">
                     <div style={{ fontWeight: 700 }}>{pet?.name} - {a.type}</div>
                     <div style={{ fontSize: 12, color: "var(--txt2)" }}>{fmt(a.date)} at {a.time}</div>
                   </div>
@@ -1352,16 +1528,16 @@ function Dashboard({ user, setPage }) {
   return (
     <div className="fu">
       {/* Welcome banner */}
-      <div style={{ background: "linear-gradient(135deg,var(--ink) 0%,var(--ink-soft) 60%,#1a4a5a 100%)", borderRadius: "var(--r-lg)", padding: "18px 24px", marginBottom: 20, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <div style={{ color: "#fff" }}>
-          <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 22, fontWeight: 700 }}>
+      <div className="dash-banner">
+        <div className="dash-banner-text">
+          <div className="dash-banner-title">
             {new Date().getHours() < 12 ? "Good Morning" : new Date().getHours() < 17 ? "Good Afternoon" : "Good Evening"}, {user.name.split(" ")[0]}! {new Date().getHours() < 12 ? "🌤️" : new Date().getHours() < 17 ? "☀️" : "🌙"}
           </div>
-          <div style={{ fontSize: 12, opacity: .65, marginTop: 3 }}>
+          <div className="dash-banner-sub">
             {new Date().toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
           </div>
         </div>
-        <div style={{ display: "flex", gap: 10 }}>
+        <div className="dash-banner-actions">
           {user.role === "doctor" && <button className="btn btn-gold" onClick={() => setPage("consultation")}>🩺 Consultation</button>}
           <button className="btn" style={{ background: "rgba(255,255,255,.1)", color: "#fff", border: "1px solid rgba(255,255,255,.2)" }} onClick={() => setPage("appointments")}>📅 Appointments</button>
         </div>
@@ -1388,17 +1564,15 @@ function Dashboard({ user, setPage }) {
       {lowStock.slice(0,2).map(i => <div key={i.id} className="alert a-err" style={{ marginBottom: 7 }}>📦 <strong>{i.name}</strong> - Only {i.stock} {i.unit} left (min {i.minStock}). <span style={{ textDecoration: "underline", cursor: "pointer" }} onClick={() => setPage("inventory")}>View →</span></div>)}
       {overdue.slice(0,2).map(v => { const p = db.pets.find(pt=>pt.id===v.petId); return <div key={v.id} className="alert a-warn" style={{ marginBottom: 7 }}>💉 <strong>{p?.name}</strong> - {v.vaccine} overdue. <span style={{ textDecoration: "underline", cursor: "pointer" }} onClick={() => setPage("reminders")}>Remind →</span></div>; })}
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 18, marginBottom: 18 }}>
+      <div className="g-dash">
         {/* Quick Actions */}
         <div className="card">
           <div className="card-head"><span className="card-title">⚡ Quick Actions</span></div>
-          <div style={{ padding: "10px 12px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+          <div className="g-qa" style={{ padding: "10px 12px" }}>
             {QUICK_ACTIONS.map((a, i) => (
-              <button key={i} onClick={() => setPage(a.page)} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 5, padding: "12px 8px", background: "var(--canvas)", border: "1px solid var(--bdr2)", borderRadius: 10, cursor: "pointer", transition: "all .18s", fontFamily: "inherit" }}
-                onMouseEnter={e => { e.currentTarget.style.background = a.color; e.currentTarget.style.color = "#fff"; e.currentTarget.style.borderColor = a.color; }}
-                onMouseLeave={e => { e.currentTarget.style.background = "var(--canvas)"; e.currentTarget.style.color = ""; e.currentTarget.style.borderColor = "var(--bdr2)"; }}>
+              <button key={i} onClick={() => setPage(a.page)} className="qa-btn" style={{ "--qa-color": a.color }}>
                 <span style={{ fontSize: 20 }}>{a.icon}</span>
-                <span style={{ fontSize: 11, fontWeight: 700, textAlign: "center", lineHeight: 1.2 }}>{a.label}</span>
+                <span>{a.label}</span>
               </button>
             ))}
           </div>
@@ -1415,7 +1589,7 @@ function Dashboard({ user, setPage }) {
               return (
                 <div key={v.id} className={`q-item${v.emergency?" emg":""}`} style={{ marginBottom: 7, padding: "9px 11px" }}>
                   <div className="q-ava" style={{ background: pet.color, width: 36, height: 36 }}>{pet.photo}</div>
-                  <div style={{ flex: 1 }}>
+                  <div style={{ flex: 1, minWidth: 0 }} className="q-main">
                     <div style={{ fontWeight: 700, fontSize: 12 }}>{pet.name} {v.emergency && <span className="badge b-emg" style={{ fontSize: 9 }}>EMG</span>}</div>
                     <div style={{ fontSize: 10, color: "var(--txt2)" }}>{owner?.name} · {v.reason?.slice(0,25)}</div>
                   </div>
@@ -1439,7 +1613,7 @@ function Dashboard({ user, setPage }) {
                 <div key={a.id} style={{ display: "flex", gap: 10, alignItems: "center", padding: "8px 6px", borderBottom: "1px solid var(--bdr3)" }}>
                   <div style={{ background: typeColors[a.type]||"var(--ink)", color: "#fff", borderRadius: 6, padding: "3px 7px", fontSize: 11, fontFamily: "'JetBrains Mono',monospace", fontWeight: 700, minWidth: 44, textAlign: "center" }}>{a.time}</div>
                   <div style={{ fontSize: 18 }}>{pet?.photo||"🐾"}</div>
-                  <div style={{ flex: 1 }}>
+                  <div style={{ flex: 1, minWidth: 0 }} className="q-main">
                     <div style={{ fontSize: 12, fontWeight: 700 }}>{pet?.name}</div>
                     <div style={{ fontSize: 10, color: "var(--txt3)" }}>{owner?.name} · {a.type}</div>
                   </div>
@@ -1455,7 +1629,7 @@ function Dashboard({ user, setPage }) {
       </div>
 
       {/* Recent Patients + Revenue Snapshot */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18 }}>
+      <div className="g-dash-2">
         <div className="card">
           <div className="card-head"><span className="card-title">🐾 Recent Patients</span><button className="btn btn-ghost btn-xs" onClick={() => setPage("patients")}>All Patients →</button></div>
           <div style={{ padding: "6px 14px" }}>
@@ -1465,7 +1639,7 @@ function Dashboard({ user, setPage }) {
               return (
                 <div key={v.id} style={{ display: "flex", gap: 11, alignItems: "center", padding: "9px 0", borderBottom: "1px solid var(--bdr3)" }}>
                   <div style={{ fontSize: 22 }}>{pet?.photo}</div>
-                  <div style={{ flex: 1 }}>
+                  <div style={{ flex: 1, minWidth: 0 }} className="q-main">
                     <div style={{ fontWeight: 700, fontSize: 13 }}>{pet?.name}</div>
                     <div style={{ fontSize: 11, color: "var(--txt2)" }}>{owner?.name} · {v.diagnosis||v.reason}</div>
                     <div style={{ fontSize: 10, color: "var(--txt3)" }}>{fmt(v.date)}</div>
@@ -1492,7 +1666,7 @@ function Dashboard({ user, setPage }) {
                 <div style={{ height: 6, background: "var(--bdr)", borderRadius: 3 }}><div style={{ height: "100%", background: "linear-gradient(90deg,var(--gold),var(--gold-lt))", borderRadius: 3, width: `${max>0?Math.min(100,(v/max)*100):0}%`, transition: "width .5s" }} /></div>
               </div>
             ))}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 8 }}>
+            <div className="g2" style={{ gap: 10, marginTop: 8 }}>
               {[
                 { l: "Paid Invoices", v: db.invoices.filter(i=>i.status==="paid").length },
                 { l: "Cash Payments", v: db.invoices.filter(i=>i.method==="Cash").length },
@@ -1522,7 +1696,7 @@ function PetMiniCard({ pet, db }) {
         <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 17, fontWeight: 700 }}>{pet.name}</div>
         <div style={{ fontSize: 12, color: "var(--txt2)", marginTop: 2 }}>{pet.breed} · {pet.type} · {calcAge(pet.dob)}</div>
         <div style={{ fontSize: 12, color: "var(--txt3)", marginTop: 3 }}>Last visit: {lastVisit ? fmt(lastVisit.date) : "No visits"}</div>
-        {pet.alerts.length > 0 && <div style={{ marginTop: 6 }}>{pet.alerts.slice(0, 1).map((a, i) => <span key={i} className="badge b-emg" style={{ fontSize: 10 }}>s ️ {a}</span>)}</div>}
+        {pet.alerts.length > 0 && <div style={{ marginTop: 6 }}>{pet.alerts.slice(0, 1).map((a, i) => <span key={i} className="badge b-emg" style={{ fontSize: 10 }}>⚠️ {a}</span>)}</div>}
       </div>
     </div>
   );
@@ -1562,12 +1736,12 @@ function QueuePage({ setPage, setConsultVisit }) {
 
   return (
     <div className="fu">
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 22 }}>
+      <div className="page-toolbar">
         <div>
           <div className="pt">Patient Queue</div>
           <div className="ps">{todayVisits.filter(v => v.status !== "done").length} active · {todayVisits.filter(v => v.emergency).length} emergency</div>
         </div>
-        <div style={{ display: "flex", gap: 10 }}>
+        <div className="page-toolbar-actions">
           <button className="btn btn-ghost" onClick={() => setShowWalkIn(true)}>+ Walk-in</button>
           <button className="btn btn-gold" style={{ background: "var(--red)", color: "#fff" }} onClick={() => { setShowWalkIn(true); }}>🚶 Emergency</button>
         </div>
@@ -1582,7 +1756,7 @@ function QueuePage({ setPage, setConsultVisit }) {
           </button>
         ))}
       </div>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 13 }}>
+      <div className="g2" style={{ gap: 13 }}>
         {filtered.map((v, i) => {
           const pet = db.pets.find(p => p.id === v.petId);
           const owner = pet && db.owners.find(o => o.id === pet.ownerId);
@@ -1592,7 +1766,7 @@ function QueuePage({ setPage, setConsultVisit }) {
             <div key={v.id} className={`q-item${v.emergency ? " emg" : ""}`} style={{ borderRadius: "var(--r-lg)", padding: "15px 17px", alignItems: "flex-start" }}>
               <div style={{ fontSize: 13, fontFamily: "'JetBrains Mono',monospace", color: "var(--txt3)", minWidth: 22, paddingTop: 2 }}>#{i + 1}</div>
               <div className="q-ava" style={{ background: pet.color, fontSize: 22, width: 48, height: 48 }}>{pet.photo}</div>
-              <div style={{ flex: 1 }}>
+              <div style={{ flex: 1, minWidth: 0 }} className="q-main">
                 <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginBottom: 4 }}>
                   <span style={{ fontWeight: 700, fontSize: 15 }}>{pet.name}</span>
                   <span className="case-pill">{v.caseNum}</span>
@@ -1613,8 +1787,8 @@ function QueuePage({ setPage, setConsultVisit }) {
                   {STATUS_MAP[v.status]}
                 </div>
               </div>
-              <div style={{ display: "flex", flexDirection: "column", gap: 6, marginTop: 2 }}>
-                {/* Vitals button ?" always available */}
+              <div className="q-actions">
+                {/* Vitals button — always available */}
                 <button className="btn btn-ghost btn-sm" onClick={() => openVitals(v)} title="Record vital signs" style={{ background: hasVitals ? "var(--teal-pale)" : undefined, borderColor: hasVitals ? "var(--teal)" : undefined, color: hasVitals ? "var(--teal)" : undefined }}>
                   {hasVitals ? "✅ Vitals" : "🌡️ Vitals"}
                 </button>
@@ -1658,7 +1832,7 @@ function QueuePage({ setPage, setConsultVisit }) {
                   <div style={{ fontSize: 12, color: "var(--txt2)" }}>{vitalsVisit.caseNum} · {vitalsVisit.reason}</div>
                 </div>
               </div>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+              <div className="g2" style={{ gap: 16 }}>
                 {[
                   { key: "temp", label: "Temperature", unit: "°F", placeholder: "101.5", normal: "100-102.5°F", icon: "🌡️" },
                   { key: "hr", label: "Heart Rate", unit: "bpm", placeholder: "80", normal: "60-120 bpm", icon: "❤️" },
@@ -1787,9 +1961,9 @@ function AppointmentsPage() {
 
   return (
     <div className="fu">
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 22 }}>
+      <div className="page-toolbar">
         <div><div className="pt">Appointments</div><div className="ps">Manage clinic schedule</div></div>
-        <div style={{ display: "flex", gap: 10 }}>
+        <div className="page-toolbar-actions">
           <div style={{ display: "flex", border: "1px solid var(--bdr)", borderRadius: 8, overflow: "hidden" }}>
             {["day", "week", "month"].map(v => (
               <button key={v} onClick={() => setViewMode(v)} style={{ padding: "7px 14px", border: "none", cursor: "pointer", fontFamily: "inherit", fontSize: 13, fontWeight: 600, background: viewMode === v ? "var(--ink)" : "var(--white)", color: viewMode === v ? "#fff" : "var(--txt2)", transition: "all .18s" }}>{v.charAt(0).toUpperCase() + v.slice(1)}</button>
@@ -1798,7 +1972,7 @@ function AppointmentsPage() {
           <button className="btn btn-gold" onClick={() => setShowModal(true)}>+ Book Appointment</button>
         </div>
       </div>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 320px", gap: 20 }}>
+      <div className="g-side">
         <div className="card">
           <div className="card-body">
             {/* Month navigation */}
@@ -1844,7 +2018,7 @@ function AppointmentsPage() {
                   onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
                   <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 12, color: "var(--ink-soft)", fontWeight: 600, minWidth: 40, paddingTop: 2 }}>{a.time}</div>
                   <div style={{ fontSize: 18 }}>{pet?.photo || "🐾"}</div>
-                  <div style={{ flex: 1 }}>
+                  <div style={{ flex: 1, minWidth: 0 }} className="q-main">
                     <div style={{ fontSize: 13, fontWeight: 700 }}>{pet?.name}</div>
                     <div style={{ fontSize: 11, color: "var(--txt3)" }}>{owner?.name}</div>
                     <span style={{ display: "inline-block", marginTop: 3, background: "var(--canvas)", border: "1px solid var(--bdr)", padding: "1px 7px", borderRadius: 4, fontSize: 10, fontWeight: 700 }}>{a.type}</span>
@@ -1932,7 +2106,7 @@ function PatientsPage({ setPage, setConsultVisit, onAddVaccine }) {
 
   return (
     <div className="fu">
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 22 }}>
+      <div className="page-toolbar">
         <div><div className="pt">Owners & Pets</div><div className="ps">{db.pets.length} pets · {db.owners.length} owners registered</div></div>
         <button className="btn btn-gold" onClick={() => setShowModal(true)}>🐾 Register New Pet</button>
       </div>
@@ -1940,14 +2114,14 @@ function PatientsPage({ setPage, setConsultVisit, onAddVaccine }) {
         <span className="srch-ic">🔍</span>
         <input className="srch-inp" placeholder="Search by pet name, owner, mobile..." value={search} onChange={e => setSearch(e.target.value)} />
       </div>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 15 }}>
+      <div className="g-pets">
         {filtered.map(pet => {
           const owner = db.owners.find(o => o.id === pet.ownerId);
           const visits = db.visits.filter(v => v.petId === pet.id);
           return (
             <div key={pet.id} className="pcard" onClick={() => setSelected(pet)} style={{ background: `linear-gradient(135deg,var(--white) 65%,${pet.color})` }}>
               <div className="pava" style={{ background: pet.color, width: 60, height: 60, fontSize: 28, borderRadius: 16 }}>{pet.photo}</div>
-              <div style={{ flex: 1 }}>
+              <div style={{ flex: 1, minWidth: 0 }} className="q-main">
                 <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 18, fontWeight: 700 }}>{pet.name}</div>
                 <div style={{ fontSize: 12, color: "var(--txt2)", marginTop: 2 }}>{pet.breed} · {pet.type}</div>
                 <div style={{ fontSize: 11, color: "var(--txt3)", marginTop: 2 }}>{calcAge(pet.dob)} · {pet.sex} · {pet.weight}kg</div>
@@ -2017,7 +2191,7 @@ function PetProfile({ pet, onBack, setPage, setConsultVisit }) {
   return (
     <div className="fu">
       <button className="btn btn-ghost btn-sm" onClick={onBack} style={{ marginBottom: 16 }}>← Back to Pets</button>
-      <div style={{ display: "grid", gridTemplateColumns: "300px 1fr", gap: 20 }}>
+      <div className="g-wide-side">
         <div>
           <div className="card" style={{ marginBottom: 14 }}>
             <div style={{ background: "linear-gradient(135deg,var(--ink) 0%,var(--ink-soft) 100%)", padding: "24px 18px", textAlign: "center" }}>
@@ -2027,7 +2201,7 @@ function PetProfile({ pet, onBack, setPage, setConsultVisit }) {
               <span className="badge b-gold" style={{ marginTop: 8 }}>{pet.type}</span>
             </div>
             <div className="card-body" style={{ padding: "14px 16px" }}>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+              <div className="g2" style={{ gap: 8 }}>
                 {[["Age", calcAge(pet.dob)], ["Sex", pet.sex], ["Weight", `${pet.weight}kg`], ["Visits", visits.length], ["Owner", owner?.name], ["Mobile", owner?.mobile]].map(([k, v]) => (
                   <div key={k} style={{ background: "var(--canvas)", borderRadius: 8, padding: "9px 11px" }}>
                     <div style={{ fontSize: 10, color: "var(--txt3)", fontWeight: 800, textTransform: "uppercase" }}>{k}</div>
@@ -2039,8 +2213,8 @@ function PetProfile({ pet, onBack, setPage, setConsultVisit }) {
           </div>
           {pet.alerts.length > 0 && (
             <div className="card" style={{ marginBottom: 14 }}>
-              <div className="card-head" style={{ padding: "12px 16px" }}><span className="card-title" style={{ fontSize: 14 }}>s ️ Medical Alerts</span></div>
-              <div style={{ padding: "10px 14px" }}>{pet.alerts.map((a, i) => <div key={i} className="alert a-err" style={{ marginBottom: 6 }}>s ️ {a}</div>)}</div>
+              <div className="card-head" style={{ padding: "12px 16px" }}><span className="card-title" style={{ fontSize: 14 }}>⚠️ Medical Alerts</span></div>
+              <div style={{ padding: "10px 14px" }}>{pet.alerts.map((a, i) => <div key={i} className="alert a-err" style={{ marginBottom: 6 }}>⚠️ {a}</div>)}</div>
             </div>
           )}
           <div className="card">
@@ -2103,7 +2277,7 @@ function PetProfile({ pet, onBack, setPage, setConsultVisit }) {
               {vaccs.map(v => (
                 <div key={v.id} style={{ display: "flex", alignItems: "center", gap: 14, padding: "13px 16px", background: "var(--white)", borderRadius: "var(--r)", border: "1px solid var(--bdr2)", marginBottom: 10 }}>
                   <div style={{ fontSize: 28 }}>💉</div>
-                  <div style={{ flex: 1 }}>
+                  <div style={{ flex: 1, minWidth: 0 }} className="q-main">
                     <div style={{ fontWeight: 700 }}>{v.vaccine}</div>
                     <div style={{ fontSize: 12, color: "var(--txt3)", marginTop: 2 }}>Given: {fmt(v.given)} · Batch: {v.batch}</div>
                   </div>
@@ -2125,7 +2299,7 @@ function PetProfile({ pet, onBack, setPage, setConsultVisit }) {
                 return (
                   <div key={rx.id} className="card" style={{ marginBottom: 14 }}>
                     <div className="card-head">
-                      <span className="card-title" style={{ fontSize: 14 }}>Y'S Prescription ?" {visit && fmt(visit.date)}</span>
+                      <span className="card-title" style={{ fontSize: 14 }}>💊 Prescription — {visit && fmt(visit.date)}</span>
                       <span className="case-pill">{visit?.caseNum}</span>
                     </div>
                     <div className="card-body" style={{ padding: "12px 16px" }}>
@@ -2172,7 +2346,7 @@ function ImageUploadBox({ label, files, onAdd, onRemove }) {
   return (
     <div style={{ marginTop: 10 }}>
       <div style={{ fontSize: 10.5, fontWeight: 800, color: "var(--txt3)", textTransform: "uppercase", letterSpacing: ".05em", marginBottom: 6 }}>
-        Y"Z Attach {label} Files
+        📎 Attach {label} Files
       </div>
       <div
         onClick={() => ref.current.click()}
@@ -2334,13 +2508,13 @@ function TreatmentSection({ title, icon, options, items, onAdd, onRemove, onUpda
           </div>
           {/* Added items */}
           {items.map((item, idx) => (
-            <div key={idx} style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 2fr auto", gap: 8, marginBottom: 8, alignItems: "center" }}>
-              <div style={{ fontWeight: 700, fontSize: 13, color: "var(--ink)", paddingLeft: 4 }}>Y'S {item.name}</div>
+            <div key={idx} className="med-row">
+              <div style={{ fontWeight: 700, fontSize: 13, color: "var(--ink)", paddingLeft: 4 }}>💊 {item.name}</div>
               {[["dose", "Dose"], ["duration", "Duration"], ["instruction", "Instruction"]].map(([k, ph]) => (
                 <input key={k} style={{ padding: "6px 9px", border: "1.5px solid var(--bdr)", borderRadius: 7, fontSize: 12, fontFamily: "inherit", outline: "none" }}
                   placeholder={ph} value={item[k]} onChange={e => onUpdate(idx, k, e.target.value)} />
               ))}
-              <button onClick={() => onRemove(idx)} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--red)", fontSize: 18, padding: "0 4px" }}>o.</button>
+              <button onClick={() => onRemove(idx)} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--red)", fontSize: 18, padding: "0 4px" }}>✕</button>
             </div>
           ))}
         </div>
@@ -2358,7 +2532,7 @@ function ConsultationPage({ consultVisit }) {
   };
   const [selVisit, setSelVisit] = useState(getActiveVisit);
 
-  // "?"? Diagnosis state "?"?
+  // "?"← Diagnosis state "?"?
   const [vitals, setVitals] = useState({ temp: selVisit?.temp || "", hr: selVisit?.hr || "", rr: selVisit?.rr || "", weight: selVisit?.weight || "" });
   const [genExam, setGenExam] = useState({ mucous: "", mucousNote: "", dehydration: "", dehydrationNote: "", bodyCondition: "", bodyConditionNote: "", appetite: "", appetiteNote: "", gait: "", gaitNote: "", urination: "", urinationNote: "", stool: "", stoolNote: "" });
   const [sysExam, setSysExam] = useState({ alimentary: "", alimentaryNote: "", resp: "", respNote: "", cardio: "", cardioNote: "", urinogenital: "", urinogenitalNote: "", gynae: "", gynaeNote: "", skin: "", skinNote: "" });
@@ -2369,7 +2543,7 @@ function ConsultationPage({ consultVisit }) {
   const removeImagingFile = (key, idx) => setImagingFiles(prev => ({ ...prev, [key]: prev[key].filter((_,i)=>i!==idx) }));
   const [dxText, setDxText] = useState(selVisit?.diagnosis || "");
 
-  // "?"? Treatment state (by category) "?"?
+  // "?"← Treatment state (by category) "?"?
   const [treatment, setTreatment] = useState({
     injections: [],
     abxInjection: [],
@@ -2386,10 +2560,10 @@ function ConsultationPage({ consultVisit }) {
   });
   const [treatNotes, setTreatNotes] = useState("");
 
-  // "?"? Medication (full prescription list) "?"?
+  // "?"← Medication (full prescription list) "?"?
   const [medicines, setMedicines] = useState([]);
 
-  // "?"? Vaccination state "?"?
+  // "?"← Vaccination state "?"?
   const [vaccForm, setVaccForm] = useState({ petType: "dog", deworm: false, dewormNote: "", tick: false, tickNote: "", dog9in1: false, dog9in1Note: "", dogRabies: false, dogRabiesNote: "", dogCorona: false, dogCoronaNote: "", dogKennel: false, dogKennelNote: "", catTricat: false, catTricatNote: "", catRabies: false, catRabiesNote: "", customVacc: "", reminderDays: "21", reminderNote: "" });
 
   // "?"? Billing "?"?
@@ -2432,7 +2606,7 @@ function ConsultationPage({ consultVisit }) {
   if (!pet) return (
     <div className="fu">
       <div className="card" style={{ padding: 40, textAlign: "center", color: "var(--txt3)" }}>
-        <div style={{ fontSize: 50 }}>Y</div>
+        <div style={{ fontSize: 50 }}>🐾</div>
         <div style={{ fontSize: 18, fontFamily: "'Cormorant Garamond',serif", fontWeight: 700, marginTop: 12 }}>No Active Consultation</div>
         <div style={{ marginTop: 8, fontSize: 14 }}>Select a patient from the Queue to start consultation.</div>
       </div>
@@ -2517,7 +2691,7 @@ function ConsultationPage({ consultVisit }) {
     addV(vaccForm.catRabies, "Anti-Rabies (Cat)", vaccForm.catRabiesNote);
     if (vaccForm.customVacc.trim()) addV(true, vaccForm.customVacc.trim(), "");
     saveDB();
-    if (vacc21.length) toast(`o. ${vacc21.length} vaccination(s) saved ?" reminders set for ${vaccForm.reminderDays} days`, "success");
+    if (vacc21.length) toast(`✅ ${vacc21.length} vaccination(s) saved — reminders set for ${vaccForm.reminderDays} days`, "success");
     else toast("No vaccines selected", "error");
   };
 
@@ -2562,11 +2736,11 @@ function ConsultationPage({ consultVisit }) {
           <div style={{ display: "flex", alignItems: "center", gap: 9, flexWrap: "wrap" }}>
             <span style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 22, fontWeight: 700 }}>{pet.name}</span>
             <span className="case-pill">{selVisit.caseNum}</span>
-            {selVisit.emergency && <span className="badge b-emg">Ys EMERGENCY</span>}
+            {selVisit.emergency && <span className="badge b-emg">🚨 EMERGENCY</span>}
           </div>
-          <div style={{ opacity: .72, fontSize: 12, marginTop: 2 }}>{pet.breed} · {calcAge(pet.dob)} · {pet.sex} · Owner: {owner?.name} · Y"z {owner?.mobile}</div>
+          <div style={{ opacity: .72, fontSize: 12, marginTop: 2 }}>{pet.breed} · {calcAge(pet.dob)} · {pet.sex} · Owner: {owner?.name} · 📞 {owner?.mobile}</div>
         </div>
-        {pet.alerts.length > 0 && pet.alerts.map((a,i) => <span key={i} style={{ background: "rgba(255,60,50,.3)", border: "1px solid rgba(255,60,50,.5)", borderRadius: 7, padding: "5px 10px", fontSize: 12 }}>s ️ {a}</span>)}
+        {pet.alerts.length > 0 && pet.alerts.map((a,i) => <span key={i} style={{ background: "rgba(255,60,50,.3)", border: "1px solid rgba(255,60,50,.5)", borderRadius: 7, padding: "5px 10px", fontSize: 12 }}>⚠️ {a}</span>)}
         <div style={{ textAlign: "right", fontSize: 12 }}>
           <div style={{ opacity: .55 }}>{selVisit.reason}</div>
           <div style={{ fontWeight: 700, marginTop: 2 }}>{fmt(selVisit.date)}</div>
@@ -2576,14 +2750,14 @@ function ConsultationPage({ consultVisit }) {
       <div className="tabs">{TABS.map(([id, label]) => <div key={id} className={`tab${tab === id ? " on" : ""}`} onClick={() => setTab(id)}>{label}</div>)}</div>
 
       {/* ..........................................................
-          TAB 1 ?" DIAGNOSIS
+          TAB 1 — DIAGNOSIS
       .......................................................... */}
       {tab === "diagnosis" && (
         <div className="fu">
           {/* Vitals row */}
           <div className="card" style={{ marginBottom: 16 }}>
             <div className="card-head"><span className="card-title">🌡️ Vital Signs</span></div>
-            <div style={{ padding: "14px 18px", display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 12 }}>
+            <div className="g-vitals" style={{ padding: "14px 18px" }}>
               <VitalSelect vitalKey="temp" label="Temperature" unit="°F" norm="100-102.5" value={vitals.temp} onChange={v => setVitals({...vitals, temp: v})} />
               <VitalSelect vitalKey="hr" label="Heart Rate" unit="bpm" norm="60-120" value={vitals.hr} onChange={v => setVitals({...vitals, hr: v})} />
               <VitalSelect vitalKey="rr" label="Resp Rate" unit="/min" norm="10-30" value={vitals.rr} onChange={v => setVitals({...vitals, rr: v})} />
@@ -2598,7 +2772,7 @@ function ConsultationPage({ consultVisit }) {
 
           {/* General Clinical Examination */}
           <SectionBox title="General Clinical Examination" icon="🩺">
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+            <div className="g2">
               <ChipGroup label="Mucous Membrane" options={["Pink/Moist","Pale","Icteric","Cyanotic","Congested","Dry"]} value={genExam.mucous} onChange={v=>setGenExam({...genExam,mucous:v})} notes={genExam.mucousNote} onNotes={v=>setGenExam({...genExam,mucousNote:v})} />
               <ChipGroup label="Dehydration" options={["None","Mild < 5%","Moderate 5-8%","Severe > 8%"]} value={genExam.dehydration} onChange={v=>setGenExam({...genExam,dehydration:v})} notes={genExam.dehydrationNote} onNotes={v=>setGenExam({...genExam,dehydrationNote:v})} />
               <ChipGroup label="Body Condition Score" options={["1 - Emaciated","2-3 Thin","4-5 Ideal","6-7 Overweight","8-9 Obese"]} value={genExam.bodyCondition} onChange={v=>setGenExam({...genExam,bodyCondition:v})} notes={genExam.bodyConditionNote} onNotes={v=>setGenExam({...genExam,bodyConditionNote:v})} />
@@ -2611,7 +2785,7 @@ function ConsultationPage({ consultVisit }) {
 
           {/* System Examination */}
           <SectionBox title="System Examination" icon="🧬">
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+            <div className="g2">
               {[
                 ["alimentary","Alimentary Track",["Normal","Vomiting","Diarrhoea","Bloat","Pain on palpation","Masses felt","Constipation"]],
                 ["resp","Respiratory Track",["Normal","Cough","Nasal discharge","Dyspnoea","Wheezing","Crackles","Open mouth breathing"]],
@@ -2629,7 +2803,7 @@ function ConsultationPage({ consultVisit }) {
 
           {/* Tests */}
           <SectionBox title="Investigations / Tests" icon="🧪">
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+            <div className="g2">
               {[
                 ["bloodTest","Blood Test",["PCV/TLC/DLC","Glucose","BUN","Creatinine","ALT","AST","Total Protein"]],
                 ["cbc","CBC (Complete Blood Count)",["Normal","Anaemia","Leucocytosis","Leucopenia","Thrombocytopenia","Left shift"]],
@@ -2648,7 +2822,7 @@ function ConsultationPage({ consultVisit }) {
 
           {/* Imaging */}
           <SectionBox title="Imaging & Diagnostics" icon="🖼️">
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18 }}>
+            <div className="g-dash-2">
               {[
                 ["xray","🩻 X-Ray",["Chest AP","Chest Lateral","Abdomen","Hip & Pelvis","Limbs","Spine","Skull"]],
                 ["sono","📊 Sonography / Ultrasound",["Abdominal","Cardiac","Urinary bladder","Reproductive","Thyroid","Guided FNAC"]],
@@ -2676,14 +2850,14 @@ function ConsultationPage({ consultVisit }) {
             <input style={{...inp, fontSize:15, fontWeight:600}} placeholder="Enter final diagnosis..." value={dxText} onChange={e=>setDxText(e.target.value)} />
           </div>
 
-          <div style={{ display:"flex", justifyContent:"flex-end", marginTop:14 }}>
+          <div className="row-end" style={{ marginTop: 14 }}>
             <button className="btn btn-gold" style={{ padding:"11px 28px", fontSize:14 }} onClick={() => { db.visits = db.visits.map(v=>v.id===selVisit.id?{...v,temp:vitals.temp,hr:vitals.hr,rr:vitals.rr,weight:vitals.weight,diagnosis:dxText}:v); saveDB(); toast("Diagnosis saved!","success"); setTab("treatment"); }}>Save & Next: Treatment →</button>
           </div>
         </div>
       )}
 
       {/* ..........................................................
-          TAB 2 ?" TREATMENT
+          TAB 2 — TREATMENT
       .......................................................... */}
       {tab === "treatment" && (
         <div className="fu">
@@ -2714,32 +2888,32 @@ function ConsultationPage({ consultVisit }) {
           <TreatmentSection title="Emergency / Critical Care Drugs" icon="s" options={[
             "Inj. Atropine","Inj. Dexamethasone","Inj. Botropase","Inj. Ethamsylate","Mannitol"
           ]} items={treatment.emergency} onAdd={i=>addTx("emergency",i)} onRemove={idx=>removeTx("emergency",idx)} onUpdate={(idx,k,v)=>updateTx("emergency",idx,k,v)} />
-          <TreatmentSection title="Diuretics" icon="Y'" options={[
+          <TreatmentSection title="Diuretics" icon="💧" options={[
             "Inj. Furosemide","Inj. Torsemide"
           ]} items={treatment.diuretic} onAdd={i=>addTx("diuretic",i)} onRemove={idx=>removeTx("diuretic",idx)} onUpdate={(idx,k,v)=>updateTx("diuretic",idx,k,v)} />
-          <TreatmentSection title="Fluids & Nutrition" icon="Y" options={[
-            "Normal Saline (NS)","Lactated Ringer?Ts Solution (RL)","DNS","D10","D25","Astymin","Vetplasma"
+          <TreatmentSection title="Fluids & Nutrition" icon="🧴" options={[
+            "Normal Saline (NS)","Lactated Ringer's Solution (RL)","DNS","D10","D25","Astymin","Vetplasma"
           ]} items={treatment.fluids} onAdd={i=>addTx("fluids",i)} onRemove={idx=>removeTx("fluids",idx)} onUpdate={(idx,k,v)=>updateTx("fluids",idx,k,v)} />
-          <TreatmentSection title="Surgical / Clinical Consumables" icon="Y" options={[
+          <TreatmentSection title="Surgical / Clinical Consumables" icon="🧰" options={[
             "Absorbent Cotton Wool","Gauze Swab / Rolled Gauze","Bandage Rolls","Surgical Gloves","Disposable Gloves",
             "Syringes (2ml, 5ml, 10ml, 20ml, 50ml)","IV Sets / Pediatric Sets","IV Cannula (21G, 22G, 23G)","Scalp Vein Sets","Infant Feeding Tube"
           ]} items={treatment.consumables} onAdd={i=>addTx("consumables",i)} onRemove={idx=>removeTx("consumables",idx)} onUpdate={(idx,k,v)=>updateTx("consumables",idx,k,v)} />
-          <TreatmentSection title="Topical / Misc" icon="Y" options={[
+          <TreatmentSection title="Topical / Misc" icon="🧴" options={[
             "Lignocaine 2% Jelly","Surgical Spirit","Liquid Chloroform","D-Mag Spray"
           ]} items={treatment.topical} onAdd={i=>addTx("topical",i)} onRemove={idx=>removeTx("topical",idx)} onUpdate={(idx,k,v)=>updateTx("topical",idx,k,v)} />
           <div className="card" style={{ padding:"14px 18px", marginTop:4 }}>
             <label style={lbl}>Treatment Notes / Instructions</label>
             <textarea style={{...inp, minHeight:70}} placeholder="Diet restriction, rest, wound care, follow-up instructions..." value={treatNotes} onChange={e=>setTreatNotes(e.target.value)} />
           </div>
-          <div style={{ display:"flex", justifyContent:"space-between", marginTop:14 }}>
-            <button className="btn btn-ghost" onClick={()=>setTab("diagnosis")}>? Diagnosis</button>
-            <button className="btn btn-gold" onClick={()=>setTab("medication")}>Next: Medication List ?'</button>
+          <div className="row-between" style={{ marginTop: 14 }}>
+            <button className="btn btn-ghost" onClick={()=>setTab("diagnosis")}>← Diagnosis</button>
+            <button className="btn btn-gold" onClick={()=>setTab("medication")}>Next: Medication List →</button>
           </div>
         </div>
       )}
 
       {/* ..........................................................
-          TAB 3 ?" MEDICATION (manual full list)
+          TAB 3 — MEDICATION (manual full list)
       .......................................................... */}
       {tab === "medication" && (
         <div className="fu">
@@ -2772,19 +2946,19 @@ function ConsultationPage({ consultVisit }) {
                 <div style={{ marginBottom:12 }}>
                   <div style={{ fontSize:12, color:"var(--txt2)", marginBottom:8 }}>Auto-filled from Treatment tab:</div>
                   {allMedFromTreatment().map((m,i) => (
-                    <div key={i} style={{ display:"grid", gridTemplateColumns:"2.5fr 1fr 1fr 2fr auto", gap:8, marginBottom:8, alignItems:"center" }}>
-                      <div style={{ fontWeight:700, fontSize:13, paddingLeft:4 }}>Y'S {m.name}</div>
+                    <div key={i} className="med-row-lg">
+                      <div style={{ fontWeight:700, fontSize:13, paddingLeft:4 }}>💊 {m.name}</div>
                       {["dose","duration","instruction"].map(k => (
                         <input key={k} style={inp} value={m[k]||""} placeholder={k.charAt(0).toUpperCase()+k.slice(1)} readOnly />
                       ))}
                       <span/>
                     </div>
                   ))}
-                  <button className="btn btn-ghost btn-sm" style={{ marginTop:4 }} onClick={()=>setMedicines(allMedFromTreatment().map(m=>({...m})))}>o️ Edit These</button>
+                  <button className="btn btn-ghost btn-sm" style={{ marginTop:4 }} onClick={()=>setMedicines(allMedFromTreatment().map(m=>({...m})))}>✏️ Edit These</button>
                 </div>
               )}
               {medicines.map((m,i) => (
-                <div key={i} style={{ display:"grid", gridTemplateColumns:"2.5fr 1fr 1fr 2fr auto", gap:8, marginBottom:10, alignItems:"center", padding:"10px 12px", background:"var(--canvas)", borderRadius:9, border:"1px solid var(--bdr2)" }}>
+                <div key={i} className="med-row-lg" style={{ marginBottom:10, padding:"10px 12px", background:"var(--canvas)", borderRadius:9, border:"1px solid var(--bdr2)" }}>
                   <div>
                     <label style={lbl}>Medicine Name *</label>
                     <input style={inp} value={m.name} onChange={e=>{const n=[...medicines];n[i].name=e.target.value;setMedicines(n);}} placeholder="e.g. Amoxicillin 250mg" />
@@ -2801,12 +2975,12 @@ function ConsultationPage({ consultVisit }) {
                     <label style={lbl}>Instruction</label>
                     <input style={inp} value={m.instruction} onChange={e=>{const n=[...medicines];n[i].instruction=e.target.value;setMedicines(n);}} placeholder="After food, twice daily" />
                   </div>
-                  <button onClick={()=>setMedicines(medicines.filter((_,j)=>j!==i))} style={{ background:"none", border:"none", cursor:"pointer", color:"var(--red)", fontSize:20, paddingTop:14 }}>o.</button>
+                  <button onClick={()=>setMedicines(medicines.filter((_,j)=>j!==i))} style={{ background:"none", border:"none", cursor:"pointer", color:"var(--red)", fontSize:20, paddingTop:14 }}>✕</button>
                 </div>
               ))}
               {medicines.length === 0 && allMedFromTreatment().length === 0 && (
                 <div style={{ textAlign:"center", padding:"24px", color:"var(--txt3)" }}>
-                  <div style={{fontSize:36}}>Y'S</div>
+                  <div style={{fontSize:36}}>💊</div>
                   <div style={{marginTop:8}}>No medicines added yet. Add from Treatment tab or click "+ Add Row" above.</div>
                 </div>
               )}
@@ -2817,36 +2991,36 @@ function ConsultationPage({ consultVisit }) {
             <textarea style={{...inp,minHeight:70}} placeholder="Rest, diet restrictions, wound care, special instructions..." value={advice} onChange={e=>setAdvice(e.target.value)} />
           </div>
           <div className="card" style={{ padding:"14px 18px" }}>
-            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:14 }}>
+            <div className="g2">
               <div><label style={lbl}>Follow-up Date</label><input type="date" style={inp} value={nextVisit} onChange={e=>setNextVisit(e.target.value)} /></div>
               <div><label style={lbl}>Follow-up Type</label><select style={inp}><option>Routine Follow-up</option><option>Suture Removal</option><option>Recheck</option><option>Emergency</option></select></div>
             </div>
           </div>
-          <div style={{ display:"flex", justifyContent:"space-between", marginTop:14 }}>
-            <button className="btn btn-ghost" onClick={()=>setTab("treatment")}>? Treatment</button>
-            <button className="btn btn-gold" onClick={saveDiagnosis}>Save & View Prescription ?'</button>
+          <div className="row-between" style={{ marginTop: 14 }}>
+            <button className="btn btn-ghost" onClick={()=>setTab("treatment")}>← Treatment</button>
+            <button className="btn btn-gold" onClick={saveDiagnosis}>Save & View Prescription →</button>
           </div>
         </div>
       )}
 
       {/* ..........................................................
-          TAB 4 ?" VACCINATION
+          TAB 4 — VACCINATION
       .......................................................... */}
       {tab === "vaccination" && (
         <div className="fu">
-          <div className="alert a-info" style={{ marginBottom:16 }}>Y'? Select vaccines given today. Reminder will auto-schedule after <strong>{vaccForm.reminderDays} days</strong>. Each option has a notes box for lot/batch details.</div>
-          <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16 }}>
+          <div className="alert a-info" style={{ marginBottom:16 }}>💉 Select vaccines given today. Reminder will auto-schedule after <strong>{vaccForm.reminderDays} days</strong>. Each option has a notes box for lot/batch details.</div>
+          <div className="g2">
 
             {/* Deworming & Tick */}
             <div className="card">
               <div className="card-head" style={{ background:"linear-gradient(135deg,#1d6a6a,#2d9c9c)", borderRadius:"var(--r-lg) var(--r-lg) 0 0" }}>
-                <span style={{ color:"#fff", fontFamily:"'Cormorant Garamond',serif", fontSize:16, fontWeight:700 }}>Y Preventive Treatments</span>
+                <span style={{ color:"#fff", fontFamily:"'Cormorant Garamond',serif", fontSize:16, fontWeight:700 }}>🛡️ Preventive Treatments</span>
               </div>
               <div style={{ padding:"16px 18px" }}>
                 {[["deworm","Deworming","dewormNote","Common brands: Drontal, Fenbendazole, Pyrantel"],["tick","Tick / Flea Treatment","tickNote","Bravecto, NexGard, Frontline, Ivermectin"]].map(([key,label,noteKey,hint]) => (
                   <div key={key} style={{ marginBottom:14 }}>
                     <div onClick={()=>setVaccForm({...vaccForm,[key]:!vaccForm[key]})} style={{ display:"flex", alignItems:"center", gap:10, cursor:"pointer", padding:"11px 13px", borderRadius:9, border:`2px solid ${vaccForm[key]?"var(--teal)":"var(--bdr)"}`, background:vaccForm[key]?"var(--teal-pale)":"var(--white)", transition:"all .18s" }}>
-                      <div style={{ width:20, height:20, borderRadius:"50%", border:`2.5px solid ${vaccForm[key]?"var(--teal)":"var(--bdr)"}`, background:vaccForm[key]?"var(--teal)":"transparent", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>{vaccForm[key] && <span style={{color:"#fff",fontSize:12,fontWeight:800}}>o"</span>}</div>
+                      <div style={{ width:20, height:20, borderRadius:"50%", border:`2.5px solid ${vaccForm[key]?"var(--teal)":"var(--bdr)"}`, background:vaccForm[key]?"var(--teal)":"transparent", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>{vaccForm[key] && <span style={{color:"#fff",fontSize:12,fontWeight:800}}>✓</span>}</div>
                       <div><div style={{ fontWeight:800, fontSize:14, color:vaccForm[key]?"var(--teal)":"var(--txt)" }}>{label}</div><div style={{fontSize:11,color:"var(--txt3)",marginTop:1}}>{hint}</div></div>
                     </div>
                     <input style={{ ...inp, marginTop:7, fontSize:12 }} placeholder="Batch no., brand, dose, notes..." value={vaccForm[noteKey]} onChange={e=>setVaccForm({...vaccForm,[noteKey]:e.target.value})} />
@@ -2893,7 +3067,7 @@ function ConsultationPage({ consultVisit }) {
 
             {/* Custom + Reminder */}
             <div className="card">
-              <div className="card-head"><span className="card-title">z. Custom & Reminder Settings</span></div>
+              <div className="card-head"><span className="card-title">✏️ Custom & Reminder Settings</span></div>
               <div style={{ padding:"16px 18px" }}>
                 <div style={{ marginBottom:14 }}>
                   <label style={lbl}>Add Custom Vaccine / Treatment</label>
@@ -2908,7 +3082,7 @@ function ConsultationPage({ consultVisit }) {
                     ))}
                   </div>
                   <div style={{ marginTop:8, padding:"9px 12px", background:"var(--gold-pale)", borderRadius:8, fontSize:12, color:"var(--gold-dim)", fontWeight:600 }}>
-                    Y". Next reminder date: <strong>{(() => { const d=new Date(); d.setDate(d.getDate()+parseInt(vaccForm.reminderDays||21)); return fmt(d.toISOString().split("T")[0]); })()}</strong>
+                    📅. Next reminder date: <strong>{(() => { const d=new Date(); d.setDate(d.getDate()+parseInt(vaccForm.reminderDays||21)); return fmt(d.toISOString().split("T")[0]); })()}</strong>
                   </div>
                 </div>
                 <div>
@@ -2918,18 +3092,18 @@ function ConsultationPage({ consultVisit }) {
               </div>
             </div>
           </div>
-          <div style={{ display:"flex", justifyContent:"space-between", marginTop:14 }}>
-            <button className="btn btn-ghost" onClick={()=>setTab("medication")}>? Medication</button>
+          <div className="row-between" style={{ marginTop: 14 }}>
+            <button className="btn btn-ghost" onClick={()=>setTab("medication")}>← Medication</button>
             <div style={{ display:"flex", gap:10 }}>
-              <button className="btn btn-teal" onClick={saveVaccinations}>Y'? Save Vaccinations & Set Reminder</button>
-              <button className="btn btn-gold" onClick={()=>setTab("prescription")}>Next: Prescription ?'</button>
+              <button className="btn btn-teal" onClick={saveVaccinations}>💉 Save Vaccinations & Set Reminder</button>
+              <button className="btn btn-gold" onClick={()=>setTab("prescription")}>Next: Prescription →</button>
             </div>
           </div>
         </div>
       )}
 
       {/* ..........................................................
-          TAB 5 ?" PRESCRIPTION
+          TAB 5 — PRESCRIPTION
       .......................................................... */}
       {tab === "prescription" && (
         <div className="fu">
@@ -2942,7 +3116,7 @@ function ConsultationPage({ consultVisit }) {
                     <div>
                       <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:22, fontWeight:700 }}>{db.clinicSettings.name}</div>
                       <div style={{ fontSize:12, opacity:.8 }}>{db.clinicSettings.doctor}</div>
-                      <div style={{ fontSize:11, opacity:.6, marginTop:2 }}>Y" {db.clinicSettings.address} · Y"z {db.clinicSettings.phone}</div>
+                      <div style={{ fontSize:11, opacity:.6, marginTop:2 }}>📍 {db.clinicSettings.address} · 📞 {db.clinicSettings.phone}</div>
                     </div>
                   </div>
                   <div style={{ textAlign:"right" }}>
@@ -2952,7 +3126,7 @@ function ConsultationPage({ consultVisit }) {
                 </div>
               </div>
               <div className="rx-bd">
-                <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:10, marginBottom:16, background:"var(--canvas)", padding:"12px 14px", borderRadius:"var(--r)", border:"1px solid var(--bdr)" }}>
+                <div className="g-vitals" style={{ marginBottom:16, background:"var(--canvas)", padding:"12px 14px", borderRadius:"var(--r)", border:"1px solid var(--bdr)" }}>
                   {[["PET",pet.name],["SPECIES",`${pet.type} (${pet.breed})`],["AGE/SEX",`${calcAge(pet.dob)}, ${pet.sex}`],["WEIGHT",`${vitals.weight||pet.weight}kg`],["OWNER",owner?.name],["DIAGNOSIS",dxText||"—"]].map(([k,v]) => (
                     <div key={k}><span style={{fontSize:10,color:"var(--txt3)",fontWeight:800}}>{k}:</span> <strong style={{fontSize:13}}>{v}</strong></div>
                   ))}
@@ -2962,7 +3136,7 @@ function ConsultationPage({ consultVisit }) {
                   <div style={{ display:"flex", gap:18, marginBottom:14, padding:"9px 13px", background:"var(--canvas)", borderRadius:8, fontSize:12, color:"var(--txt2)" }}>
                     {vitals.temp && <span>YO️ <strong>Temp:</strong> {vitals.temp}°F</span>}
                     {vitals.hr && <span>❤️ <strong>HR:</strong> {vitals.hr}bpm</span>}
-                    {vitals.rr && <span>Y <strong>RR:</strong> {vitals.rr}/min</span>}
+                    {vitals.rr && <span>🌬️ <strong>RR:</strong> {vitals.rr}/min</span>}
                   </div>
                 )}
                 <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:30, color:"var(--ink)", marginBottom:14 }}>"z</div>
@@ -2983,7 +3157,7 @@ function ConsultationPage({ consultVisit }) {
                 {/* Imaging attachments */}
                 {Object.entries(imagingFiles).some(([,files]) => files.length > 0) && (
                   <div style={{ marginTop:14, borderTop:"1px dashed var(--bdr)", paddingTop:10 }}>
-                    <div style={{ fontSize:11, fontWeight:800, color:"var(--txt3)", textTransform:"uppercase", marginBottom:8 }}>Y"Z Attached Imaging Files</div>
+                    <div style={{ fontSize:11, fontWeight:800, color:"var(--txt3)", textTransform:"uppercase", marginBottom:8 }}>📎 Attached Imaging Files</div>
                     <div style={{ display:"flex", flexWrap:"wrap", gap:8 }}>
                       {Object.entries(imagingFiles).flatMap(([key, files]) => files.map((f,i) => (
                         <div key={key+i} style={{ display:"flex", alignItems:"center", gap:6, background:"var(--canvas)", borderRadius:7, padding:"5px 9px", fontSize:11, border:"1px solid var(--bdr)" }}>
@@ -2998,7 +3172,7 @@ function ConsultationPage({ consultVisit }) {
                   </div>
                 )}
               </div>
-              <div className="rx-ft" style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+              <div className="rx-ft row-between">
                 <div style={{ fontSize:12, color:"var(--txt3)" }}>Reg: {db.clinicSettings.regNum}</div>
                 <div style={{ textAlign:"center" }}>
                   <div style={{ borderTop:"1px solid var(--txt)", paddingTop:4, fontSize:12, width:160 }}>{db.clinicSettings.signature || db.clinicSettings.doctor}</div>
@@ -3006,25 +3180,25 @@ function ConsultationPage({ consultVisit }) {
                 </div>
               </div>
             </div>
-            <div style={{ display:"flex", gap:10, justifyContent:"center", marginTop:16 }}>
+            <div className="row-end" style={{ justifyContent: "center", marginTop: 16, gap: 10 }}>
               <button className="btn btn-ink" onClick={() => {
                 const pet = db.pets.find(p => p.id === selVisit?.petId);
                 const owner = db.owners.find(o => o.id === pet?.ownerId);
                 const rxMeds = (db.prescriptions.find(p => p.visitId === selVisit?.id)?.medicines) || [];
                 openPrescriptionPrint({ clinic: db.clinicSettings, pet, owner, visit: selVisit, medicines: rxMeds });
-              }}>Y-️ Print Prescription</button>
-              <button className="btn btn-ghost" onClick={()=>setTab("vaccination")}>? Vaccination</button>
-              <button className="btn btn-gold" onClick={()=>setTab("billing")}>Next: Billing ?'</button>
+              }}>🖨️ Print Prescription</button>
+              <button className="btn btn-ghost" onClick={()=>setTab("vaccination")}>← Vaccination</button>
+              <button className="btn btn-gold" onClick={()=>setTab("billing")}>Next: Billing →</button>
             </div>
           </div>
         </div>
       )}
 
       {/* ..........................................................
-          TAB 6 ?" BILLING
+          TAB 6 — BILLING
       .......................................................... */}
       {tab === "billing" && (
-        <div className="fu" style={{ display:"grid", gridTemplateColumns:"1fr 340px", gap:20 }}>
+        <div className="fu g-consult">
           <div className="card">
             <div className="card-head">
               <span className="card-title">Invoice Items</span>
@@ -3033,55 +3207,57 @@ function ConsultationPage({ consultVisit }) {
             <div className="card-body">
               {/* Auto-add from medicines */}
               {rxMeds.length > 0 && billItems.length === 1 && (
-                <button className="btn btn-ghost btn-sm" style={{ marginBottom:12 }} onClick={() => setBillItems([billItems[0], ...rxMeds.map(m => ({ name: m.name, qty: 1, rate: 80, amt: 80 })), { name:"Vaccination", qty:1, rate:300, amt:300 }])}>s Auto-fill from Prescription</button>
+                <button className="btn btn-ghost btn-sm" style={{ marginBottom:12 }} onClick={() => setBillItems([billItems[0], ...rxMeds.map(m => ({ name: m.name, qty: 1, rate: 80, amt: 80 })), { name:"Vaccination", qty:1, rate:300, amt:300 }])}>⚡ Auto-fill from Prescription</button>
               )}
               {/* Inventory stock check */}
               {billItems.length > 1 && (
                 <div style={{ marginBottom: 14, background: "var(--canvas)", borderRadius: 9, padding: "10px 14px", border: "1px solid var(--bdr2)" }}>
-                  <div style={{ fontSize: 11, fontWeight: 800, color: "var(--txt2)", textTransform: "uppercase", letterSpacing: ".05em", marginBottom: 8 }}>Y" Inventory Stock Check</div>
+                  <div style={{ fontSize: 11, fontWeight: 800, color: "var(--txt2)", textTransform: "uppercase", letterSpacing: ".05em", marginBottom: 8 }}>📦 Inventory Stock Check</div>
                   <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
                     {billItems.filter(i => i.name && i.name !== "Consultation Fee" && i.name !== "Consultation").map((item, idx) => {
                       const inv = db.inventory.find(inv => inv.name.toLowerCase().includes(item.name.toLowerCase().split(" ")[0]));
-                      if (!inv) return <span key={idx} style={{ fontSize: 11, padding: "3px 9px", borderRadius: 12, background: "#fff8e8", border: "1px solid #f0c060", color: "#7a4a00" }}>s ️ {item.name}: not in inventory</span>;
+                      if (!inv) return <span key={idx} style={{ fontSize: 11, padding: "3px 9px", borderRadius: 12, background: "#fff8e8", border: "1px solid #f0c060", color: "#7a4a00" }}>⚠️ {item.name}: not in inventory</span>;
                       const ok = inv.stock >= (item.qty || 1);
-                      return <span key={idx} style={{ fontSize: 11, padding: "3px 9px", borderRadius: 12, background: ok ? "#e8f5ee" : "#fdf0ee", border: `1px solid ${ok ? "#80d090" : "#f0a090"}`, color: ok ? "#1a5c38" : "#900" }}>{ok ? "o." : "s ️"} {inv.name}: {inv.stock} {inv.unit}</span>;
+                      return <span key={idx} style={{ fontSize: 11, padding: "3px 9px", borderRadius: 12, background: ok ? "#e8f5ee" : "#fdf0ee", border: `1px solid ${ok ? "#80d090" : "#f0a090"}`, color: ok ? "#1a5c38" : "#900" }}>{ok ? "✓" : "⚠️"} {inv.name}: {inv.stock} {inv.unit}</span>;
                     })}
                   </div>
                 </div>
               )}
+              <div className="tbl-wrap">
               <table>
-                <thead><tr><th>Item / Service</th><th style={{textAlign:"right"}}>Qty</th><th style={{textAlign:"right"}}>Rate (,)</th><th style={{textAlign:"right"}}>Amount (,)</th><th></th></tr></thead>
+                <thead><tr><th>Item / Service</th><th style={{textAlign:"right"}}>Qty</th><th style={{textAlign:"right"}}>Rate (₹)</th><th style={{textAlign:"right"}}>Amount (₹)</th><th></th></tr></thead>
                 <tbody>
                   {billItems.map((item,i) => (
                     <tr key={i}>
                       <td><input className="inp" value={item.name} onChange={e=>{const n=[...billItems];n[i].name=e.target.value;setBillItems(n);}} style={{padding:"6px 10px"}} /></td>
                       <td style={{textAlign:"right"}}><input className="inp" type="number" value={item.qty} style={{width:60,textAlign:"right",padding:"6px 8px"}} onChange={e=>{const n=[...billItems];n[i].qty=parseInt(e.target.value)||1;n[i].amt=n[i].qty*n[i].rate;setBillItems([...n]);}} /></td>
                       <td style={{textAlign:"right"}}><input className="inp" type="number" value={item.rate} style={{width:80,textAlign:"right",padding:"6px 8px"}} onChange={e=>{const n=[...billItems];n[i].rate=parseFloat(e.target.value)||0;n[i].amt=n[i].qty*n[i].rate;setBillItems([...n]);}} /></td>
-                      <td style={{textAlign:"right",fontWeight:700}}>,{item.amt}</td>
-                      <td><button style={{background:"none",border:"none",cursor:"pointer",color:"var(--red)",fontSize:16}} onClick={()=>setBillItems(billItems.filter((_,j)=>j!==i))}>o.</button></td>
+                      <td style={{textAlign:"right",fontWeight:700}}>₹{item.amt}</td>
+                      <td><button style={{background:"none",border:"none",cursor:"pointer",color:"var(--red)",fontSize:16}} onClick={()=>setBillItems(billItems.filter((_,j)=>j!==i))}>✕</button></td>
                     </tr>
                   ))}
                 </tbody>
               </table>
+              </div>
             </div>
           </div>
           <div>
             <div className="card" style={{ marginBottom:14 }}>
               <div className="card-head"><span className="card-title">Summary</span></div>
               <div className="card-body">
-                {[["Subtotal",`,${total}`],["Tax (0%)",",0"],["Discount",",0"]].map(([k,v]) => (
+                {[["Subtotal",`₹${total}`],["Tax (0%)","₹0"],["Discount","₹0"]].map(([k,v]) => (
                   <div key={k} style={{display:"flex",justifyContent:"space-between",padding:"5px 0",fontSize:13,color:"var(--txt2)"}}><span>{k}</span><span>{v}</span></div>
                 ))}
                 <div style={{borderTop:"2px solid var(--bdr)",marginTop:8,paddingTop:12,display:"flex",justifyContent:"space-between"}}>
                   <span style={{fontWeight:700,fontSize:15}}>TOTAL</span>
-                  <span style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:700,fontSize:28,color:"var(--ink)"}}>,{total}</span>
+                  <span style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:700,fontSize:28,color:"var(--ink)"}}>₹{total}</span>
                 </div>
               </div>
             </div>
             <div className="card">
               <div className="card-head"><span className="card-title">Payment</span></div>
               <div className="card-body">
-                <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:14}}>
+                <div className="g2" style={{ marginBottom: 14, gap: 8 }}>
                   {["Cash","UPI","Card","Online"].map(m => (
                     <button key={m} className={`btn btn-sm ${payMethod===m?"btn-ink":"btn-ghost"}`} onClick={()=>setPayMethod(m)} style={{justifyContent:"center"}}>
                       {m==="Cash"?"💵":m==="UPI"?"📱":m==="Card"?"💳":"🌐"} {m}
@@ -3092,10 +3268,10 @@ function ConsultationPage({ consultVisit }) {
                   <div className="alert a-ok">✅ Payment of ₹{total} collected via {payMethod}!</div>
                 ) : (
                   <button className="btn btn-gold" style={{width:"100%",justifyContent:"center",padding:"12px",fontSize:15}} onClick={collectPayment}>
-                    o. Collect ,{total} & Generate Invoice
+                    💰 Collect ₹{total} & Generate Invoice
                   </button>
                 )}
-                <button className="btn btn-ghost btn-sm" style={{width:"100%",justifyContent:"center",marginTop:8}} onClick={()=>window.print()}>Y-️ Print Invoice</button>
+                <button className="btn btn-ghost btn-sm" style={{width:"100%",justifyContent:"center",marginTop:8}} onClick={()=>window.print()}>🖨️ Print Invoice</button>
               </div>
             </div>
           </div>
@@ -3126,7 +3302,7 @@ function VaccinationPage({ prefill, clearPrefill }) {
     nextDate.setDate(nextDate.getDate() + parseInt(form.reminderDays || 365));
     db.vaccinations.push({ id: db.vaccinations.length + 1, petId: parseInt(form.petId), vaccine: form.vaccine, given: form.given, next: nextDate.toISOString().split("T")[0], batch: form.batch, status: "ok", notes: form.notes });
     saveDB();
-    toast(`Y'? ${form.vaccine} saved ?" reminder in ${form.reminderDays} days`, "success");
+    toast(`💉 ${form.vaccine} saved — reminder in ${form.reminderDays} days`, "success");
     setShowModal(false);
     setForm({ petId: "", vaccine: "", given: todayStr(), batch: "", reminderDays: "21", notes: "" });
   };
@@ -3143,11 +3319,13 @@ function VaccinationPage({ prefill, clearPrefill }) {
 
   return (
     <div className="fu">
-      <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:22 }}>
+      <div className="page-toolbar">
         <div><div className="pt">Vaccination Management</div><div className="ps">Track & schedule all vaccines with auto-reminders</div></div>
-        <button className="btn btn-gold" onClick={() => setShowModal(true)}>Y'? Record Vaccination</button>
+        <div className="page-toolbar-actions">
+          <button className="btn btn-gold" onClick={() => setShowModal(true)}>💉 Record Vaccination</button>
+        </div>
       </div>
-      <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:14, marginBottom:18 }}>
+      <div className="g4" style={{ marginBottom: 18 }}>
         {[{l:"Due",v:dueVaccs.length,i:"⏰",c:"c4"},{l:"Overdue",v:overdueVaccs.length,i:"🔴",c:"c5"},{l:"Current",v:db.vaccinations.filter(v=>v.status==="ok").length,i:"✅",c:"c3"},{l:"Total Records",v:db.vaccinations.length,i:"📋",c:"c1"}].map((s,i)=>(
           <div key={i} className={`scard ${s.c}`}><div className="sico" style={{fontSize:22}}>{s.i}</div><div className="sval">{s.v}</div><div className="slbl">{s.l}</div></div>
         ))}
@@ -3155,14 +3333,14 @@ function VaccinationPage({ prefill, clearPrefill }) {
       {overdueVaccs.map(v=>{const pet=db.pets.find(p=>p.id===v.petId);return <div key={v.id} className="alert a-err">🔴 <strong>{pet?.name}</strong> - {v.vaccine} overdue since {fmt(v.next)}</div>;})}
 
       {/* Vaccine protocol reference cards */}
-      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:14, marginBottom:20 }}>
+      <div className="g3" style={{ marginBottom: 20 }}>
         {Object.entries(VACC_OPTIONS).map(([cat, vaccines]) => (
           <div key={cat} className="card">
-            <div className="card-head" style={{ padding:"11px 15px" }}><span className="card-title" style={{ fontSize:14 }}>{cat === "Dog Vaccines" ? "Y." : cat === "Cat Vaccines" ? "Y" : "Y>️"} {cat}</span></div>
+            <div className="card-head" style={{ padding:"11px 15px" }}><span className="card-title" style={{ fontSize:14 }}>{cat === "Dog Vaccines" ? "🐕" : cat === "Cat Vaccines" ? "🐱" : "🛡️"} {cat}</span></div>
             <div style={{ padding:"10px 14px" }}>
               {vaccines.map(v => (
                 <div key={v} style={{ display:"flex", alignItems:"center", gap:8, padding:"7px 0", borderBottom:"1px solid var(--bdr3)", fontSize:13 }}>
-                  <span style={{ fontSize:16 }}>Y'?</span>
+                  <span style={{ fontSize:16 }}>💉</span>
                   <span style={{ fontWeight:600 }}>{v}</span>
                 </div>
               ))}
@@ -3172,7 +3350,7 @@ function VaccinationPage({ prefill, clearPrefill }) {
       </div>
 
       <div className="card">
-        <div className="card-head"><span className="card-title">All Vaccination Records</span><button className="btn btn-ghost btn-sm">Y"S Export</button></div>
+        <div className="card-head"><span className="card-title">All Vaccination Records</span><button className="btn btn-ghost btn-sm">📤 Export</button></div>
         <div className="tbl-wrap">
           <table>
             <thead><tr><th>Pet</th><th>Owner</th><th>Vaccine</th><th>Given</th><th>Next Due</th><th>Reminder</th><th>Batch</th><th>Status</th><th>Action</th></tr></thead>
@@ -3206,13 +3384,13 @@ function VaccinationPage({ prefill, clearPrefill }) {
       {showModal && (
         <div className="ov" onClick={()=>setShowModal(false)}>
           <div className="modal modal-lg" onClick={e=>e.stopPropagation()}>
-            <div className="m-head"><span className="m-title">Y'? Record Vaccination</span><button className="btn-ico" onClick={()=>setShowModal(false)} style={{fontSize:16}}>o.</button></div>
+            <div className="m-head"><span className="m-title">💉 Record Vaccination</span><button className="btn-ico" onClick={()=>setShowModal(false)} style={{fontSize:16}}>✕</button></div>
             <div className="m-body">
               <div className="inp-g">
                 <label className="inp-lbl">Pet *</label>
                 <select className="inp" value={form.petId} onChange={e=>setForm({...form,petId:e.target.value})}>
                   <option value="">Choose pet...</option>
-                  {db.pets.map(p=><option key={p.id} value={p.id}>{p.photo} {p.name} ?" {db.owners.find(o=>o.id===p.ownerId)?.name}</option>)}
+                  {db.pets.map(p=><option key={p.id} value={p.id}>{p.photo} {p.name} — {db.owners.find(o=>o.id===p.ownerId)?.name}</option>)}
                 </select>
               </div>
               <div className="inp-g">
@@ -3227,7 +3405,7 @@ function VaccinationPage({ prefill, clearPrefill }) {
                   ))}
                 </select>
               </div>
-              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}>
+              <div className="g2">
                 <div className="inp-g"><label className="inp-lbl">Date Given *</label><input type="date" className="inp" value={form.given} onChange={e=>setForm({...form,given:e.target.value})} /></div>
                 <div className="inp-g"><label className="inp-lbl">Batch / Lot Number</label><input className="inp" placeholder="e.g. RBV2026A" value={form.batch} onChange={e=>setForm({...form,batch:e.target.value})} /></div>
               </div>
@@ -3240,12 +3418,12 @@ function VaccinationPage({ prefill, clearPrefill }) {
                   ))}
                 </div>
                 {form.given && <div style={{padding:"8px 11px",background:"var(--gold-pale)",borderRadius:7,fontSize:12,color:"var(--gold-dim)",fontWeight:600}}>
-                  Y". Reminder date: <strong>{(() => { const d = new Date(form.given); d.setDate(d.getDate()+parseInt(form.reminderDays||21)); return fmt(d.toISOString().split("T")[0]); })()}</strong>
+                  📅. Reminder date: <strong>{(() => { const d = new Date(form.given); d.setDate(d.getDate()+parseInt(form.reminderDays||21)); return fmt(d.toISOString().split("T")[0]); })()}</strong>
                 </div>}
               </div>
               <div className="inp-g"><label className="inp-lbl">Notes</label><textarea className="inp" rows={2} placeholder="Dosage, brand, owner instructions..." value={form.notes} onChange={e=>setForm({...form,notes:e.target.value})} /></div>
             </div>
-            <div className="m-foot"><button className="btn btn-ghost" onClick={()=>setShowModal(false)}>Cancel</button><button className="btn btn-gold" onClick={addVacc}>Y'? Save & Set Reminder</button></div>
+            <div className="m-foot"><button className="btn btn-ghost" onClick={()=>setShowModal(false)}>Cancel</button><button className="btn btn-gold" onClick={addVacc}>💉 Save & Set Reminder</button></div>
           </div>
         </div>
       )}
@@ -3294,9 +3472,9 @@ function InventoryPage() {
 
   return (
     <div className="fu">
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 22 }}>
+      <div className="page-toolbar">
         <div><div className="pt">Inventory Management</div><div className="ps">{lowStock.length} items below minimum · {expiredItems.length} expired · {expiringSoon.length} expiring within 30 days</div></div>
-        <div style={{ display: "flex", gap: 10 }}>
+        <div className="page-toolbar-actions">
           <button className="btn btn-ghost" onClick={() => {
             const rows = ["Item,Category,Stock,Unit,Min Stock,Batch,Expiry,Price,Vendor", ...db.inventory.map(i => `${i.name},${i.category},${i.stock},${i.unit},${i.minStock},${i.batch},${i.expiry},${i.price},${i.vendor}`)].join("\n");
             const a = document.createElement("a"); a.href = "data:text/csv;charset=utf-8,"+encodeURIComponent(rows); a.download = "inventory.csv"; a.click();
@@ -3305,7 +3483,7 @@ function InventoryPage() {
           <button className="btn btn-gold" onClick={() => setShowModal(true)}>+ Add Item</button>
         </div>
       </div>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 14, marginBottom: 18 }}>
+      <div className="g4" style={{ marginBottom: 18 }}>
         {[
           { l: "Total Items", v: db.inventory.length, i: "📦", c: "c1" },
           { l: "Low Stock", v: lowStock.length, i: "⚠️", c: "c5" },
@@ -3340,12 +3518,12 @@ function InventoryPage() {
                   </td>
                   <td style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 11, color: "var(--txt3)" }}>{item.batch}</td>
                   <td style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 12, color: isValidDate(item.expiry) && new Date(item.expiry) < today ? "var(--red)" : isValidDate(item.expiry) && new Date(item.expiry) - today < 30*24*3600*1000 ? "var(--org)" : "inherit" }}>{item.expiry ? fmt(item.expiry) : "N/A"}</td>
-                  <td style={{ fontWeight: 700 }}>,{item.price}</td>
+                  <td style={{ fontWeight: 700 }}>₹{item.price}</td>
                   <td>
                     <div style={{ display: "flex", gap: 6 }}>
                       <button className="btn btn-teal btn-xs" onClick={() => updateStock(item.id, 10)}>+10</button>
-                      <button className="btn btn-ghost btn-xs" onClick={() => updateStock(item.id, -1)}>^'1</button>
-                      <button className="btn btn-ghost btn-xs" onClick={() => { if(window.confirm(`Delete ${item.name}?`)) { db.inventory = db.inventory.filter(i => i.id !== item.id); saveDB(); toast("Item removed", ""); } }}>Y-'️</button>
+                      <button className="btn btn-ghost btn-xs" onClick={() => updateStock(item.id, -1)}>-1</button>
+                      <button className="btn btn-ghost btn-xs" onClick={() => { if(window.confirm(`Delete ${item.name}?`)) { db.inventory = db.inventory.filter(i => i.id !== item.id); saveDB(); toast("Item removed", ""); } }}>🗑️</button>
                     </div>
                   </td>
                 </tr>
@@ -3372,7 +3550,7 @@ function InventoryPage() {
       {showModal && (
         <div className="ov" onClick={() => setShowModal(false)}>
           <div className="modal" onClick={e => e.stopPropagation()}>
-            <div className="m-head"><span className="m-title">Add Inventory Item</span><button className="btn-ico" onClick={() => setShowModal(false)} style={{ fontSize: 16 }}>o.</button></div>
+            <div className="m-head"><span className="m-title">Add Inventory Item</span><button className="btn-ico" onClick={() => setShowModal(false)} style={{ fontSize: 16 }}>✕</button></div>
             <div className="m-body">
               <div className="inp-row cols2">
                 <div className="inp-g"><label className="inp-lbl">Item Name *</label><input className="inp" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} /></div>
@@ -3380,13 +3558,13 @@ function InventoryPage() {
                 <div className="inp-g"><label className="inp-lbl">Stock Qty *</label><input type="number" className="inp" value={form.stock} onChange={e => setForm({ ...form, stock: e.target.value })} /></div>
                 <div className="inp-g"><label className="inp-lbl">Unit</label><select className="inp" value={form.unit} onChange={e => setForm({ ...form, unit: e.target.value })}>{["tablets","capsules","vials","doses","ml","bags","sachets","units","bottles","strips"].map(u => <option key={u}>{u}</option>)}</select></div>
                 <div className="inp-g"><label className="inp-lbl">Min Stock Alert</label><input type="number" className="inp" value={form.minStock} onChange={e => setForm({ ...form, minStock: e.target.value })} /></div>
-                <div className="inp-g"><label className="inp-lbl">Price per Unit (,)</label><input type="number" className="inp" value={form.price} onChange={e => setForm({ ...form, price: e.target.value })} /></div>
+                <div className="inp-g"><label className="inp-lbl">Price per Unit (₹)</label><input type="number" className="inp" value={form.price} onChange={e => setForm({ ...form, price: e.target.value })} /></div>
                 <div className="inp-g"><label className="inp-lbl">Batch Number</label><input className="inp" value={form.batch} onChange={e => setForm({ ...form, batch: e.target.value })} /></div>
                 <div className="inp-g"><label className="inp-lbl">Expiry Date</label><input type="date" className="inp" value={form.expiry} onChange={e => setForm({ ...form, expiry: e.target.value })} /></div>
               </div>
               <div className="inp-g"><label className="inp-lbl">Vendor / Supplier</label><input className="inp" value={form.vendor} onChange={e => setForm({ ...form, vendor: e.target.value })} /></div>
             </div>
-            <div className="m-foot"><button className="btn btn-ghost" onClick={() => setShowModal(false)}>Cancel</button><button className="btn btn-gold" onClick={addItem}>Y" Add to Inventory</button></div>
+            <div className="m-foot"><button className="btn btn-ghost" onClick={() => setShowModal(false)}>Cancel</button><button className="btn btn-gold" onClick={addItem}>📦 Add to Inventory</button></div>
           </div>
         </div>
       )}
@@ -3434,19 +3612,19 @@ function BillingPage({ setPage }) {
 
   return (
     <div className="fu">
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 22 }}>
-        <div><div className="pt">Billing & Invoices</div><div className="ps">Today's revenue: <strong style={{ color: "var(--ink)" }}>,{todayRev.toLocaleString()}</strong></div></div>
-        <div style={{ display: "flex", gap: 10 }}>
+      <div className="page-toolbar">
+        <div><div className="pt">Billing & Invoices</div><div className="ps">Today's revenue: <strong style={{ color: "var(--ink)" }}>₹{todayRev.toLocaleString()}</strong></div></div>
+        <div className="page-toolbar-actions">
           <button className="btn btn-ghost" onClick={() => {
             const rows = ["Inv#,Case#,Pet,Owner,Date,Total,Method,Status", ...db.invoices.map(inv => { const pet = db.pets.find(p=>p.id===inv.petId); const owner = db.owners.find(o=>o.id===inv.ownerId); const visit = db.visits.find(v=>v.id===inv.visitId); return `INV-${String(inv.id).padStart(3,"0")},${visit?.caseNum||""},${pet?.name||""},${owner?.name||""},${inv.date},${inv.total},${inv.method},${inv.status}`; })].join("\n");
             const a = document.createElement("a"); a.href = "data:text/csv;charset=utf-8,"+encodeURIComponent(rows); a.download = "invoices.csv"; a.click();
             toast("CSV exported!", "success");
-          }}>Export CSV</button>
+          }}>📤 Export CSV</button>
           <button className="btn btn-gold" onClick={() => setShowNew(true)}>+ New Invoice</button>
         </div>
       </div>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 14, marginBottom: 22 }}>
-        {[{ l: "Today's Revenue", v: `,${todayRev.toLocaleString()}`, i: "💰", c: "c2" }, { l: "Total Invoices", v: db.invoices.length, i: "🧾", c: "c1" }, { l: "Monthly Revenue", v: `,${monthRev.toLocaleString()}`, i: "📈", c: "c3" }, { l: "Pending", v: db.invoices.filter(i => i.status === "pending").length, i: "⏳", c: "c4" }].map((s, i) => (
+      <div className="g4" style={{ marginBottom: 22 }}>
+        {[{ l: "Today's Revenue", v: `₹${todayRev.toLocaleString()}`, i: "💰", c: "c2" }, { l: "Total Invoices", v: db.invoices.length, i: "🧾", c: "c1" }, { l: "Monthly Revenue", v: `₹${monthRev.toLocaleString()}`, i: "📈", c: "c3" }, { l: "Pending", v: db.invoices.filter(i => i.status === "pending").length, i: "⏳", c: "c4" }].map((s, i) => (
           <div key={i} className={`scard ${s.c}`}><div className="sico" style={{ fontSize: 22 }}>{s.i}</div><div className="sval" style={{ fontSize: 26 }}>{s.v}</div><div className="slbl">{s.l}</div></div>
         ))}
       </div>
@@ -3465,7 +3643,7 @@ function BillingPage({ setPage }) {
                     <td><div style={{ fontWeight: 700 }}>{pet?.photo} {pet?.name}</div><div style={{ fontSize: 11, color: "var(--txt3)" }}>{owner?.name} · {owner?.mobile}</div></td>
                     <td style={{ fontSize: 12 }}>{fmt(inv.date)}</td>
                     <td style={{ fontSize: 12, color: "var(--txt2)" }}>{inv.items.length} items · {inv.items.map(i=>i.name).slice(0,2).join(", ")}{inv.items.length>2?"...":""}</td>
-                    <td><span style={{ fontFamily: "'Cormorant Garamond',serif", fontWeight: 700, fontSize: 18 }}>,{inv.total.toLocaleString()}</span></td>
+                    <td><span style={{ fontFamily: "'Cormorant Garamond',serif", fontWeight: 700, fontSize: 18 }}>₹{inv.total.toLocaleString()}</span></td>
                     <td><span className="badge b-gold">{inv.method || "N/A"}</span></td>
                     <td><span className={`badge ${inv.status === "paid" ? "b-bill" : "b-wait"}`}>{inv.status === "paid" ? "✓ Paid" : "⏳ Pending"}</span></td>
                     <td><div style={{ display: "flex", gap: 5 }}>
@@ -3485,13 +3663,13 @@ function BillingPage({ setPage }) {
       {showNew && (
         <div className="ov" onClick={() => setShowNew(false)}>
           <div className="modal modal-lg" onClick={e => e.stopPropagation()}>
-            <div className="m-head"><span className="m-title">Y New Invoice</span><button className="btn-ico" onClick={() => setShowNew(false)} style={{ fontSize: 16 }}>o.</button></div>
+            <div className="m-head"><span className="m-title">🧾 New Invoice</span><button className="btn-ico" onClick={() => setShowNew(false)} style={{ fontSize: 16 }}>✕</button></div>
             <div className="m-body">
               <div className="inp-row cols2" style={{ marginBottom: 14 }}>
                 <div className="inp-g"><label className="inp-lbl">Pet *</label>
                   <select className="inp" value={newInv.petId} onChange={e => { const pet = db.pets.find(p=>p.id===parseInt(e.target.value)); setNewInv({...newInv, petId: e.target.value, ownerId: pet?.ownerId}); }}>
                     <option value="">Select pet...</option>
-                    {db.pets.map(p => { const o = db.owners.find(o=>o.id===p.ownerId); return <option key={p.id} value={p.id}>{p.photo} {p.name} ?" {o?.name}</option>; })}
+                    {db.pets.map(p => { const o = db.owners.find(o=>o.id===p.ownerId); return <option key={p.id} value={p.id}>{p.photo} {p.name} — {o?.name}</option>; })}
                   </select>
                 </div>
                 <div className="inp-g"><label className="inp-lbl">Payment Method</label>
@@ -3505,25 +3683,25 @@ function BillingPage({ setPage }) {
                   <label className="inp-lbl" style={{ margin: 0 }}>Line Items</label>
                   <button className="btn btn-ghost btn-xs" onClick={addItem}>+ Add Row</button>
                 </div>
-                <div style={{ display: "grid", gridTemplateColumns: "3fr 1fr 1fr 1fr auto", gap: 8, marginBottom: 6 }}>
-                  {["Description", "Qty", "Rate (,)", "Amount", ""].map((h, i) => <div key={i} style={{ fontSize: 10, fontWeight: 800, color: "var(--txt3)", textTransform: "uppercase", padding: "0 4px" }}>{h}</div>)}
+                <div className="inv-row">
+                  {["Description", "Qty", "Rate (₹)", "Amount", ""].map((h, i) => <div key={i} style={{ fontSize: 10, fontWeight: 800, color: "var(--txt3)", textTransform: "uppercase", padding: "0 4px" }}>{h}</div>)}
                 </div>
                 {newInv.items.map((it, idx) => (
-                  <div key={idx} style={{ display: "grid", gridTemplateColumns: "3fr 1fr 1fr 1fr auto", gap: 8, marginBottom: 7 }}>
+                  <div key={idx} className="inv-row" style={{ marginBottom: 7 }}>
                     <input className="inp" value={it.name} onChange={e => updateItem(idx, "name", e.target.value)} placeholder="Item description" />
                     <input type="number" className="inp" value={it.qty} onChange={e => updateItem(idx, "qty", e.target.value)} min="1" />
                     <input type="number" className="inp" value={it.rate} onChange={e => updateItem(idx, "rate", e.target.value)} />
-                    <input className="inp" value={`,${it.amt}`} readOnly style={{ background: "var(--canvas)", fontWeight: 700 }} />
-                    <button onClick={() => setNewInv({...newInv, items: newInv.items.filter((_,i)=>i!==idx)})} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--red)", fontSize: 18 }}>o.</button>
+                    <input className="inp" value={`₹${it.amt}`} readOnly style={{ background: "var(--canvas)", fontWeight: 700 }} />
+                    <button onClick={() => setNewInv({...newInv, items: newInv.items.filter((_,i)=>i!==idx)})} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--red)", fontSize: 18 }}>✕</button>
                   </div>
                 ))}
                 <div style={{ textAlign: "right", fontSize: 18, fontWeight: 700, fontFamily: "'Cormorant Garamond',serif", padding: "10px 14px", background: "var(--canvas)", borderRadius: 8, marginTop: 8 }}>
-                  Total: ,{newInv.items.reduce((s,i)=>s+i.amt,0).toLocaleString()}
+                  Total: ₹{newInv.items.reduce((s,i)=>s+i.amt,0).toLocaleString()}
                 </div>
               </div>
               <div className="inp-g"><label className="inp-lbl">Notes</label><input className="inp" value={newInv.notes} onChange={e => setNewInv({...newInv, notes: e.target.value})} placeholder="Optional notes..." /></div>
             </div>
-            <div className="m-foot"><button className="btn btn-ghost" onClick={() => setShowNew(false)}>Cancel</button><button className="btn btn-gold" onClick={saveInvoice}>Y' Save Invoice</button></div>
+            <div className="m-foot"><button className="btn btn-ghost" onClick={() => setShowNew(false)}>Cancel</button><button className="btn btn-gold" onClick={saveInvoice}>💾 Save Invoice</button></div>
           </div>
         </div>
       )}
@@ -3533,7 +3711,7 @@ function BillingPage({ setPage }) {
         <div className="ov" onClick={() => setViewInv(null)}>
           <div className="modal modal-lg" onClick={e => e.stopPropagation()}>
             <div className="m-head"><span className="m-title">Invoice INV-{String(viewInv.id).padStart(3,"0")}</span>
-              <div style={{ display: "flex", gap: 8 }}>
+              <div className="page-toolbar-actions">
                 <button className="btn btn-ghost btn-sm" onClick={() => printInvoice(viewInv)}>🖨️ Print</button>
                 <button className="btn btn-gold btn-sm" onClick={() => { setViewInv(null); setPage && setPage("dashboard"); }}>← Back to Dashboard</button>
                 <button className="btn-ico" onClick={() => setViewInv(null)} style={{ fontSize: 16 }}>✕</button>
@@ -3548,11 +3726,11 @@ function BillingPage({ setPage }) {
                   </div>
                   <table style={{ marginBottom: 12 }}><thead><tr><th>#</th><th>Description</th><th>Qty</th><th>Rate</th><th>Amount</th></tr></thead>
                     <tbody>{viewInv.items.map((it, i) => (
-                      <tr key={i}><td>{i+1}</td><td style={{ fontWeight: 600 }}>{it.name}</td><td>{it.qty}</td><td>,{it.rate}</td><td style={{ fontWeight: 700 }}>,{it.amt.toLocaleString()}</td></tr>
+                      <tr key={i}><td>{i+1}</td><td style={{ fontWeight: 600 }}>{it.name}</td><td>{it.qty}</td><td>₹{it.rate}</td><td style={{ fontWeight: 700 }}>₹{it.amt.toLocaleString()}</td></tr>
                     ))}</tbody>
                   </table>
-                  <div style={{ textAlign: "right", fontSize: 22, fontWeight: 700, fontFamily: "'Cormorant Garamond',serif", padding: "10px", background: "var(--gold-pale)", borderRadius: 8 }}>Total: ,{viewInv.total.toLocaleString()}</div>
-                  <div style={{ marginTop: 12, fontSize: 12, color: "var(--txt3)", textAlign: "center" }}>Thank you for choosing {db.clinicSettings.name}! Y</div>
+                  <div style={{ textAlign: "right", fontSize: 22, fontWeight: 700, fontFamily: "'Cormorant Garamond',serif", padding: "10px", background: "var(--gold-pale)", borderRadius: 8 }}>Total: ₹{viewInv.total.toLocaleString()}</div>
+                  <div style={{ marginTop: 12, fontSize: 12, color: "var(--txt3)", textAlign: "center" }}>Thank you for choosing {db.clinicSettings.name}! 🐾</div>
                 </>);
               })()}
             </div>
@@ -3591,7 +3769,7 @@ function AnalyticsPage() {
       {!hideRevenue && (
         <div className="card" style={{ marginBottom: 16 }}>
           <div className="card-head"><span className="card-title">Payment Method Split</span></div>
-          <div className="card-body" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+          <div className="card-body g2" style={{ gap: 16 }}>
             <div style={{ padding: 16, background: "var(--teal-pale)", borderRadius: 10 }}>
               <div style={{ fontWeight: 700, color: "var(--teal)" }}>🌐 Online</div>
               <div style={{ fontSize: 28, fontWeight: 700, marginTop: 6 }}>{currency}{onlineRevenue.toLocaleString()}</div>
@@ -3630,11 +3808,11 @@ function PlannerPage() {
 
   return (
     <div className="fu">
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 22 }}>
+      <div className="page-toolbar">
         <div><div className="pt">Daily Planner</div><div className="ps">{new Date().toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}</div></div>
         <button className="btn btn-gold" onClick={() => setShowTask(true)}>+ Add Task</button>
       </div>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 14, marginBottom: 22 }}>
+      <div className="g3" style={{ marginBottom: 22 }}>
         {[{ l: "Done", v: todayVisits.filter(v => v.status === "done").length, i: "✅", c: "c3" }, { l: "In Progress", v: todayVisits.filter(v => v.status === "consulting").length, i: "🚧", c: "c1" }, { l: "Remaining", v: todayApts.filter(a => a.status !== "checked-in").length, i: "⏳", c: "c4" }].map((s, i) => (
           <div key={i} className={`scard ${s.c}`} style={{ textAlign: "center" }}>
             <div style={{ fontSize: 28, marginBottom: 8 }}>{s.i}</div>
@@ -3658,8 +3836,8 @@ function PlannerPage() {
                 marginBottom: 10, opacity: status === "done" ? 0.65 : 1
               }}>
                 <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 14, color: "var(--ink-soft)", fontWeight: 700, minWidth: 44 }}>{a.time}</div>
-                <div style={{ fontSize: 26 }}>{pet?.photo || "Y"}</div>
-                <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 26 }}>{pet?.photo || "🐾"}</div>
+                <div style={{ flex: 1, minWidth: 0 }} className="q-main">
                   <div style={{ fontWeight: 700, fontSize: 15, textDecoration: status === "done" ? "line-through" : "none" }}>{pet?.name}</div>
                   <div style={{ fontSize: 12, color: "var(--txt2)" }}>{a.type} {a.notes ? `· ${a.notes}` : ""}</div>
                 </div>
@@ -3673,14 +3851,14 @@ function PlannerPage() {
       {/* Additional Tasks */}
       {todayTasks.length > 0 && (
         <div className="card" style={{ marginTop: 16 }}>
-          <div className="card-head"><span className="card-title">Y"O Today's Tasks</span></div>
+          <div className="card-head"><span className="card-title">📋 Today's Tasks</span></div>
           <div className="card-body">
             {todayTasks.map(t => (
               <div key={t.id} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 0", borderBottom: "1px solid var(--bdr3)" }}>
                 <div onClick={() => toggleTask(t.id)} style={{ width: 22, height: 22, borderRadius: "50%", border: `2.5px solid ${t.done ? "var(--grn)" : "var(--bdr)"}`, background: t.done ? "var(--grn)" : "transparent", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0 }}>
                   {t.done && <span style={{ color: "#fff", fontSize: 12, fontWeight: 800 }}>o"</span>}
                 </div>
-                <div style={{ flex: 1 }}>
+                <div style={{ flex: 1, minWidth: 0 }} className="q-main">
                   <div style={{ fontWeight: 700, textDecoration: t.done ? "line-through" : "none", color: t.done ? "var(--txt3)" : "var(--txt)" }}>{t.title}</div>
                   {t.notes && <div style={{ fontSize: 12, color: "var(--txt3)" }}>{t.notes}</div>}
                 </div>
@@ -3693,7 +3871,7 @@ function PlannerPage() {
       {showTask && (
         <div className="ov" onClick={() => setShowTask(false)}>
           <div className="modal" onClick={e => e.stopPropagation()}>
-            <div className="m-head"><span className="m-title">Y"O Add Task</span><button className="btn-ico" onClick={() => setShowTask(false)} style={{ fontSize: 16 }}>o.</button></div>
+            <div className="m-head"><span className="m-title">📋 Add Task</span><button className="btn-ico" onClick={() => setShowTask(false)} style={{ fontSize: 16 }}>✕</button></div>
             <div className="m-body">
               <div className="inp-row cols2" style={{ marginBottom: 12 }}>
                 <div className="inp-g"><label className="inp-lbl">Task *</label><input className="inp" value={task.title} onChange={e => setTask({...task, title: e.target.value})} placeholder="e.g. Call lab for results" /></div>
@@ -3727,10 +3905,10 @@ function TimelinePage() {
 
   return (
     <div className="fu">
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 22 }}>
+      <div className="page-toolbar">
         <div><div className="pt">Patient Timeline</div><div className="ps">Complete medical history</div></div>
       </div>
-      <div style={{ display: "grid", gridTemplateColumns: "230px 1fr", gap: 20 }}>
+      <div className="g-settings">
         <div className="card" style={{ alignSelf: "start" }}>
           <div className="card-head" style={{ padding: "12px 14px" }}><span className="card-title" style={{ fontSize: 14 }}>Select Patient</span></div>
           <div style={{ padding: 8 }}>
@@ -3815,9 +3993,11 @@ function RemindersPage() {
 
   return (
     <div className="fu">
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 22 }}>
+      <div className="page-toolbar">
         <div><div className="pt">Automated Reminders</div><div className="ps">{overdueVaccs.length + followUps.length} reminders to send</div></div>
-        <button className="btn btn-gold" onClick={() => toast(`Sending all reminders via ${settings.reminderChannel || "Both"}...`, "success")}>Y" Send All Reminders</button>
+        <div className="page-toolbar-actions">
+          <button className="btn btn-gold" onClick={() => toast(`Sending all reminders via ${settings.reminderChannel || "Both"}...`, "success")}>📤 Send All Reminders</button>
+        </div>
       </div>
       <div className="card" style={{ marginBottom: 20 }}>
         <div className="card-head"><span className="card-title">Vaccination Reminders</span></div>
@@ -3828,15 +4008,17 @@ function RemindersPage() {
             const daysLeft = Math.ceil((new Date(v.next) - today) / (1000 * 60 * 60 * 24));
             const isOverdue = daysLeft < 0;
             return (
-              <div key={v.id} style={{ display: "flex", alignItems: "center", gap: 14, padding: "12px 14px", border: "1px solid var(--bdr2)", borderRadius: "var(--r)", marginBottom: 10, background: isOverdue ? "var(--red-bg)" : "var(--org-bg)" }}>
-                <div style={{ fontSize: 24 }}>{pet?.photo}</div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontWeight: 700 }}>{pet?.name} ?" {v.vaccine}</div>
-                  <div style={{ fontSize: 12, color: "var(--txt2)", marginTop: 2 }}>{owner?.name} · Y"z {owner?.mobile} · Y" {owner?.email}</div>
-                  <div style={{ fontSize: 12, color: "var(--txt3)", marginTop: 2 }}>Due: {fmt(v.next)}</div>
+              <div key={v.id} className="reminder-item" style={{ background: isOverdue ? "var(--red-bg)" : "var(--org-bg)" }}>
+                <div className="reminder-ava">{pet?.photo}</div>
+                <div className="reminder-body">
+                  <div className="reminder-title">{pet?.name} — {v.vaccine}</div>
+                  <div className="reminder-meta">{owner?.name} · 📞 {owner?.mobile}</div>
+                  <div className="reminder-meta">📧 {owner?.email}</div>
+                  <div className="reminder-due">Due: {fmt(v.next)}</div>
                 </div>
-                <span className={`badge ${isOverdue ? "b-emg" : "b-wait"}`}>{isOverdue ? "Overdue" : `⏰ Due in ${daysLeft}d`}</span>
-                <div style={{ display: "flex", gap: 6 }}>
+                <div className="reminder-foot">
+                  <span className={`badge ${isOverdue ? "b-emg" : "b-wait"}`}>{isOverdue ? "Overdue" : `⏰ Due in ${daysLeft}d`}</span>
+                  <div className="reminder-btns">
                   <button className="btn btn-sm btn-ghost" onClick={() => {
                     const msg = encodeURIComponent(tpl(settings.reminderVaccTemplate, {
                       owner_name: owner?.name || "",
@@ -3847,13 +4029,14 @@ function RemindersPage() {
                       clinic_phone: db.clinicSettings?.phone || ""
                     }));
                     (function(num,txt){const wapp=`whatsapp://send?phone=91${num}&text=${txt}`;const web=`https://api.whatsapp.com/send?phone=91${num}&text=${txt}`;const a=document.createElement("a");a.href=wapp;a.click();setTimeout(()=>{if(!document.hidden)window.open(web,"_blank");},1500);})(owner?.mobile?.replace(/[^0-9]/g,"")|| "", msg);
-                  }} style={{ background: "#25d366", color: "#fff", border: "none" }}>Y' WhatsApp</button>
-                  <button className="btn btn-sm btn-ghost" onClick={() => toast(`Email sent to ${owner?.email}`, "success")}>Y" Email</button>
+                  }} style={{ background: "#25d366", color: "#fff", border: "none" }}>💬 WhatsApp</button>
+                  <button className="btn btn-sm btn-ghost" onClick={() => toast(`Email sent to ${owner?.email}`, "success")}>📧 Email</button>
+                  </div>
                 </div>
               </div>
             );
           })}
-          {overdueVaccs.length === 0 && <div style={{ textAlign: "center", padding: 20, color: "var(--txt3)" }}>o. No vaccination reminders needed</div>}
+          {overdueVaccs.length === 0 && <div style={{ textAlign: "center", padding: 20, color: "var(--txt3)" }}>✅ No vaccination reminders needed</div>}
         </div>
       </div>
       <div className="card">
@@ -3863,14 +4046,15 @@ function RemindersPage() {
             const pet = db.pets.find(p => p.id === a.petId);
             const owner = db.owners.find(o => o.id === a.ownerId);
             return (
-              <div key={a.id} style={{ display: "flex", alignItems: "center", gap: 14, padding: "12px 14px", border: "1px solid var(--bdr2)", borderRadius: "var(--r)", marginBottom: 10 }}>
-                <div style={{ fontSize: 24 }}>{pet?.photo}</div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontWeight: 700 }}>{pet?.name} ?" {a.type}</div>
-                  <div style={{ fontSize: 12, color: "var(--txt2)", marginTop: 2 }}>{owner?.name} · Y"z {owner?.mobile}</div>
-                  <div style={{ fontSize: 12, color: "var(--txt3)", marginTop: 2 }}>Appointment: {fmt(a.date)} at {a.time}</div>
+              <div key={a.id} className="reminder-item">
+                <div className="reminder-ava">{pet?.photo}</div>
+                <div className="reminder-body">
+                  <div className="reminder-title">{pet?.name} — {a.type}</div>
+                  <div className="reminder-meta">{owner?.name} · 📞 {owner?.mobile}</div>
+                  <div className="reminder-due">Appointment: {fmt(a.date)} at {a.time}</div>
                 </div>
-                <div style={{ display: "flex", gap: 6 }}>
+                <div className="reminder-foot">
+                  <div className="reminder-btns">
                   <button className="btn btn-sm btn-ghost" onClick={() => {
                     const msg = encodeURIComponent(tpl(settings.reminderFollowupTemplate, {
                       owner_name: owner?.name || "",
@@ -3881,8 +4065,9 @@ function RemindersPage() {
                       clinic_phone: db.clinicSettings?.phone || ""
                     }));
                     (function(num,txt){const wapp=`whatsapp://send?phone=91${num}&text=${txt}`;const web=`https://api.whatsapp.com/send?phone=91${num}&text=${txt}`;const a=document.createElement("a");a.href=wapp;a.click();setTimeout(()=>{if(!document.hidden)window.open(web,"_blank");},1500);})(owner?.mobile?.replace(/[^0-9]/g,"")|| "", msg);
-                  }} style={{ background: "#25d366", color: "#fff", border: "none" }}>Y' WhatsApp</button>
-                  <button className="btn btn-sm btn-ghost" onClick={() => toast(`Email sent to ${owner?.email}`, "success")}>Y" Email</button>
+                  }} style={{ background: "#25d366", color: "#fff", border: "none" }}>💬 WhatsApp</button>
+                  <button className="btn btn-sm btn-ghost" onClick={() => toast(`Email sent to ${owner?.email}`, "success")}>📧 Email</button>
+                  </div>
                 </div>
               </div>
             );
@@ -3912,10 +4097,10 @@ function SettingsPage() {
 
   return (
     <div className="fu">
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 22 }}>
+      <div className="page-toolbar">
         <div className="pt">Clinic Settings</div>
       </div>
-      <div style={{ display: "grid", gridTemplateColumns: "220px 1fr", gap: 20 }}>
+      <div className="g-settings-sm">
         <div className="card" style={{ alignSelf: "start" }}>
           {["clinic", "doctor", "billing", "reminders", "users", "security"].map((s, i) => {
             const labels = { clinic: "Clinic Profile", doctor: "Doctor Info", billing: "Billing Settings", reminders: "Reminder Config", users: "Users & Roles", security: "Security" };
@@ -3928,12 +4113,12 @@ function SettingsPage() {
             {tab === "clinic" && (
               <>
                 <div style={{ display: "flex", gap: 18, alignItems: "center", marginBottom: 22, padding: "14px 16px", background: "var(--canvas)", borderRadius: "var(--r)", border: "1px solid var(--bdr)" }}>
-                  <div style={{ width: 70, height: 70, background: "var(--ink)", borderRadius: "var(--r)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 32 }}>Y</div>
+                  <div style={{ width: 70, height: 70, background: "var(--ink)", borderRadius: "var(--r)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 32 }}>🏥</div>
                   <div>
                     <div style={{ fontWeight: 700, fontSize: 16 }}>{settings.name}</div>
                     <div style={{ fontSize: 12, color: "var(--txt3)", marginTop: 2 }}>Clinic Logo</div>
                     <label className="btn btn-ghost btn-sm" style={{ marginTop: 8 }}>
-                      Y" Upload Logo
+                      📷 Upload Logo
                       <input type="file" accept="image/*" style={{ display: "none" }} onChange={(e) => {
                         const file = e.target.files?.[0];
                         if (!file) return;
@@ -3968,14 +4153,14 @@ function SettingsPage() {
                   <div className="inp-g"><label className="inp-lbl">Specialization</label><input className="inp" value={settings.specialization || ""} onChange={e => setSettings({ ...settings, specialization: e.target.value })} /></div>
                   <div className="inp-g"><label className="inp-lbl">Experience (years)</label><input type="number" className="inp" value={settings.experience ?? 0} onChange={e => setSettings({ ...settings, experience: parseInt(e.target.value) || 0 })} /></div>
                   <div className="inp-g"><label className="inp-lbl">Signature (for Rx)</label><input className="inp" value={settings.signature || ""} onChange={e => setSettings({ ...settings, signature: e.target.value })} placeholder="Dr. Name, Qualification" /></div>
-                  <div className="inp-g"><label className="inp-lbl">Consultation Fee (,)</label><input type="number" className="inp" value={settings.consultFee} onChange={e => setSettings({ ...settings, consultFee: parseInt(e.target.value) })} /></div>
+                  <div className="inp-g"><label className="inp-lbl">Consultation Fee (₹)</label><input type="number" className="inp" value={settings.consultFee} onChange={e => setSettings({ ...settings, consultFee: parseInt(e.target.value) })} /></div>
                 </div>
                 <div className="inp-g"><label className="inp-lbl">Doctor Bio / Speciality Note</label><textarea className="inp" rows={3} value={settings.doctorBio || ""} onChange={e => setSettings({ ...settings, doctorBio: e.target.value })} /></div>
               </>
             )}
             {tab === "billing" && (
               <div className="inp-row cols2">
-                <div className="inp-g"><label className="inp-lbl">Default Consultation Fee (,)</label><input type="number" className="inp" value={settings.consultFee} onChange={e => setSettings({ ...settings, consultFee: parseInt(e.target.value) })} /></div>
+                <div className="inp-g"><label className="inp-lbl">Default Consultation Fee (₹)</label><input type="number" className="inp" value={settings.consultFee} onChange={e => setSettings({ ...settings, consultFee: parseInt(e.target.value) })} /></div>
                 <div className="inp-g"><label className="inp-lbl">Currency Symbol</label><input className="inp" value={settings.currency} onChange={e => setSettings({ ...settings, currency: e.target.value })} /></div>
                 <div className="inp-g"><label className="inp-lbl">Tax Rate (%)</label><input type="number" className="inp" value={settings.taxRate ?? 0} onChange={e => setSettings({ ...settings, taxRate: parseFloat(e.target.value) || 0 })} /></div>
                 <div className="inp-g"><label className="inp-lbl">Invoice Prefix</label><input className="inp" value={settings.invoicePrefix || "INV"} onChange={e => setSettings({ ...settings, invoicePrefix: e.target.value })} /></div>
@@ -4034,7 +4219,7 @@ function SettingsPage() {
                           <td style={{ fontSize: 12 }}>{u.mobile}</td>
                           <td><span className="badge b-bill">- Active</span></td>
                           <td><div style={{ display: "flex", gap: 6 }}>
-                            <button className="btn btn-ghost btn-xs" style={{ color: "var(--red)" }} onClick={() => deleteStaff(u)}>Y-'️</button>
+                            <button className="btn btn-ghost btn-xs" style={{ color: "var(--red)" }} onClick={() => deleteStaff(u)}>🗑️</button>
                           </div></td>
                         </tr>
                       ))}
@@ -4045,7 +4230,7 @@ function SettingsPage() {
             )}
             {tab === "security" && (
               <div>
-                <div className="alert a-info" style={{ marginBottom: 16 }}>Y"' Manage password, session timeouts, and access controls.</div>
+                <div className="alert a-info" style={{ marginBottom: 16 }}>🔐 Manage password, session timeouts, and access controls.</div>
                 <div className="inp-row cols2" style={{ marginBottom: 14 }}>
                   <div className="inp-g"><label className="inp-lbl">Current Password</label><input type="password" className="inp" placeholder="Enter current password" /></div>
                   <div className="inp-g"></div>
@@ -4053,7 +4238,7 @@ function SettingsPage() {
                   <div className="inp-g"><label className="inp-lbl">Confirm New Password</label><input type="password" className="inp" placeholder="Repeat new password" /></div>
                 </div>
                 <div style={{ display: "flex", gap: 10, marginBottom: 20 }}>
-                  <button className="btn btn-ink btn-sm" onClick={() => toast("Password updated!", "success")}>Y"' Update Password</button>
+                  <button className="btn btn-ink btn-sm" onClick={() => toast("Password updated!", "success")}>🔐 Update Password</button>
                 </div>
                 <div style={{ borderTop: "1px solid var(--bdr2)", paddingTop: 16 }}>
                   <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 12 }}>Session Settings</div>
@@ -4072,8 +4257,8 @@ function SettingsPage() {
             )}
             {(tab !== "users") && (
               <div style={{ marginTop: 20, display: "flex", gap: 10, borderTop: "1px solid var(--bdr2)", paddingTop: 16 }}>
-                <button className="btn btn-ink" onClick={save}>Y' Save Changes</button>
-                <button className="btn btn-ghost" onClick={() => setSettings({ ...db.clinicSettings })}>? Reset</button>
+                <button className="btn btn-ink" onClick={save}>💾 Save Changes</button>
+                <button className="btn btn-ghost" onClick={() => setSettings({ ...db.clinicSettings })}>↩ Reset</button>
               </div>
             )}
           </div>
@@ -4116,31 +4301,31 @@ function SuppliersPage() {
 
   return (
     <div className="fu">
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 22 }}>
+      <div className="page-toolbar">
         <div><div className="pt">Supplier & Vendor Payments</div><div className="ps">Track all medicine, vaccine and supply purchases</div></div>
-        <div style={{ display: "flex", gap: 10 }}>
+        <div className="page-toolbar-actions">
           <button className="btn btn-ghost" onClick={() => {
             const rows = ["Date,Vendor,Item,Qty,Unit Price,Total,Status,Notes", ...payments.map(p => `${p.date},${p.vendor},${p.item},${p.qty},${p.unitPrice},${p.total},${p.status},${p.notes || ""}`)].join("\n");
             const a = document.createElement("a"); a.href = "data:text/csv;charset=utf-8,"+encodeURIComponent(rows); a.download = "supplier_payments.csv"; a.click();
             toast("CSV exported!", "success");
-          }}>Y"S Export CSV</button>
+          }}>📤 Export CSV</button>
           <button className="btn btn-gold" onClick={() => setShowModal(true)}>+ Record Purchase</button>
         </div>
       </div>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 14, marginBottom: 22 }}>
+      <div className="g4" style={{ marginBottom: 22 }}>
         {[
           { l: "Total Purchases", v: payments.length, i: "📦", c: "c1" },
-          { l: "Total Paid", v: `,${totalPaid.toLocaleString()}`, i: "o.", c: "c3" },
-          { l: "Pending Payment", v: `,${totalPending.toLocaleString()}`, i: "⏳", c: "c4" },
-          { l: "Vendors", v: [...new Set(payments.map(p => p.vendor))].length, i: "Y", c: "c2" },
+          { l: "Total Paid", v: `₹${totalPaid.toLocaleString()}`, i: "✅", c: "c3" },
+          { l: "Pending Payment", v: `₹${totalPending.toLocaleString()}`, i: "⏳", c: "c4" },
+          { l: "Vendors", v: [...new Set(payments.map(p => p.vendor))].length, i: "🏢", c: "c2" },
         ].map((s, i) => (
           <div key={i} className={`scard ${s.c}`}><div className="sico" style={{ fontSize: 22 }}>{s.i}</div><div className="sval" style={{ fontSize: 28 }}>{s.v}</div><div className="slbl">{s.l}</div></div>
         ))}
       </div>
       {payments.filter(p => p.status === "pending").map(p => (
         <div key={p.id} className="alert a-warn" style={{ marginBottom: 8 }}>
-          ⏳ <strong>{p.vendor}</strong> ?" ,{p.total.toLocaleString()} pending for <em>{p.item}</em>
-          <button className="btn btn-ghost btn-xs" style={{ marginLeft: 10 }} onClick={() => markPaid(p.id)}>o. Mark Paid</button>
+          ⏳ <strong>{p.vendor}</strong> — ₹{p.total.toLocaleString()} pending for <em>{p.item}</em>
+          <button className="btn btn-ghost btn-xs" style={{ marginLeft: 10 }} onClick={() => markPaid(p.id)}>✓ Mark Paid</button>
         </div>
       ))}
       <div className="card">
@@ -4154,13 +4339,13 @@ function SuppliersPage() {
                   <td><div style={{ fontWeight: 700 }}>{p.vendor}</div></td>
                   <td><div style={{ fontSize: 13 }}>{p.item}</div>{p.notes && <div style={{ fontSize: 11, color: "var(--txt3)" }}>{p.notes}</div>}</td>
                   <td style={{ fontFamily: "'JetBrains Mono',monospace" }}>{p.qty}</td>
-                  <td style={{ fontFamily: "'JetBrains Mono',monospace" }}>,{p.unitPrice}</td>
-                  <td><span style={{ fontFamily: "'Cormorant Garamond',serif", fontWeight: 700, fontSize: 17 }}>,{p.total.toLocaleString()}</span></td>
-                  <td><span className={`badge ${p.status === "paid" ? "b-bill" : "b-wait"}`}>{p.status === "paid" ? "o. Paid" : "⏳ Pending"}</span></td>
+                  <td style={{ fontFamily: "'JetBrains Mono',monospace" }}>₹{p.unitPrice}</td>
+                  <td><span style={{ fontFamily: "'Cormorant Garamond',serif", fontWeight: 700, fontSize: 17 }}>₹{p.total.toLocaleString()}</span></td>
+                  <td><span className={`badge ${p.status === "paid" ? "b-bill" : "b-wait"}`}>{p.status === "paid" ? "✓ Paid" : "⏳ Pending"}</span></td>
                   <td>
                     <div style={{ display: "flex", gap: 5 }}>
                       {p.status === "pending" && <button className="btn btn-teal btn-xs" onClick={() => markPaid(p.id)}>Mark Paid</button>}
-                      <button className="btn btn-ghost btn-xs">Y-️</button>
+                      <button className="btn btn-ghost btn-xs">🖨️</button>
                     </div>
                   </td>
                 </tr>
@@ -4173,7 +4358,7 @@ function SuppliersPage() {
       {showModal && (
         <div className="ov" onClick={() => setShowModal(false)}>
           <div className="modal" onClick={e => e.stopPropagation()}>
-            <div className="m-head"><span className="m-title">Y" Record Supplier Purchase</span><button className="btn-ico" onClick={() => setShowModal(false)} style={{ fontSize: 16 }}>o.</button></div>
+            <div className="m-head"><span className="m-title">📦 Record Supplier Purchase</span><button className="btn-ico" onClick={() => setShowModal(false)} style={{ fontSize: 16 }}>✕</button></div>
             <div className="m-body">
               <div className="inp-row cols2">
                 <div className="inp-g"><label className="inp-lbl">Vendor / Supplier *</label>
@@ -4186,7 +4371,7 @@ function SuppliersPage() {
               <div className="inp-row cols3">
                 <div className="inp-g"><label className="inp-lbl">Quantity</label><input type="number" className="inp" value={form.qty} onChange={e => setForm({ ...form, qty: e.target.value, total: (parseFloat(e.target.value) * parseFloat(form.unitPrice || 0)).toFixed(2) })} /></div>
                 <div className="inp-g"><label className="inp-lbl">Unit Price (,)</label><input type="number" className="inp" value={form.unitPrice} onChange={e => setForm({ ...form, unitPrice: e.target.value, total: (parseFloat(form.qty || 0) * parseFloat(e.target.value)).toFixed(2) })} /></div>
-                <div className="inp-g"><label className="inp-lbl">Total Amount (,) *</label><input type="number" className="inp" value={form.total} onChange={e => setForm({ ...form, total: e.target.value })} /></div>
+                <div className="inp-g"><label className="inp-lbl">Total Amount (₹) *</label><input type="number" className="inp" value={form.total} onChange={e => setForm({ ...form, total: e.target.value })} /></div>
               </div>
               <div className="inp-row cols2">
                 <div className="inp-g"><label className="inp-lbl">Payment Status</label>
@@ -4195,7 +4380,7 @@ function SuppliersPage() {
                 <div className="inp-g"><label className="inp-lbl">Notes (Batch, Invoice No.)</label><input className="inp" value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} /></div>
               </div>
             </div>
-            <div className="m-foot"><button className="btn btn-ghost" onClick={() => setShowModal(false)}>Cancel</button><button className="btn btn-gold" onClick={addPayment}>Y" Save Purchase</button></div>
+            <div className="m-foot"><button className="btn btn-ghost" onClick={() => setShowModal(false)}>Cancel</button><button className="btn btn-gold" onClick={addPayment}>📦 Save Purchase</button></div>
           </div>
         </div>
       )}
@@ -4236,10 +4421,10 @@ function CertificatesPage() {
 
   return (
     <div className="fu">
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 22 }}>
+      <div className="page-toolbar">
         <div><div className="pt">Certificates & Forms</div><div className="ps">Generate official veterinary documents</div></div>
       </div>
-      <div style={{ display: "grid", gridTemplateColumns: "240px 1fr", gap: 20 }}>
+      <div className="g-cert">
         <div>
           <div className="card" style={{ marginBottom: 14 }}>
             <div className="card-head" style={{ padding: "12px 14px" }}><span className="card-title" style={{ fontSize: 14 }}>Certificate Type</span></div>
@@ -4264,7 +4449,7 @@ function CertificatesPage() {
         <div className="card">
           <div className="card-head">
             <span className="card-title">{CERT_TYPES.find(c => c.id === certType)?.label}</span>
-            <div style={{ display: "flex", gap: 8 }}>
+            <div className="page-toolbar-actions">
               <button className="btn btn-ghost btn-sm" onClick={() => toast("Download as PDF or Print? Save as PDF", "")}>Download PDF</button>
               <button className="btn btn-gold btn-sm" onClick={printCert}>Print</button>
             </div>
@@ -4272,20 +4457,20 @@ function CertificatesPage() {
           <div className="card-body" id="cert-preview">
             {/* Header */}
             <div style={{ textAlign: "center", borderBottom: "3px double var(--ink)", paddingBottom: 16, marginBottom: 20 }}>
-              <div style={{ fontSize: 32, marginBottom: 6 }}>Y</div>
+              <div style={{ fontSize: 32, marginBottom: 6 }}>🏥</div>
               <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 26, fontWeight: 700, color: "var(--ink)" }}>{db.clinicSettings.name}</div>
               <div style={{ fontSize: 13, color: "var(--txt2)", marginTop: 3 }}>{db.clinicSettings.address}</div>
-              <div style={{ fontSize: 12, color: "var(--txt3)", marginTop: 2 }}>Y"z {db.clinicSettings.phone} · o?️ {db.clinicSettings.email}</div>
+              <div style={{ fontSize: 12, color: "var(--txt3)", marginTop: 2 }}>📞 {db.clinicSettings.phone} · ✉️ {db.clinicSettings.email}</div>
               <div style={{ fontSize: 11, color: "var(--txt3)", marginTop: 2 }}>Reg. No: {db.clinicSettings.regNum}</div>
             </div>
-            {!pet && <div style={{ textAlign: "center", padding: 40, color: "var(--txt3)" }}>Y'? Select a pet to generate the certificate</div>}
+            {!pet && <div style={{ textAlign: "center", padding: 40, color: "var(--txt3)" }}>💉 Select a pet to generate the certificate</div>}
             {pet && certType === "vaccination" && (
               <div>
                 <div style={{ textAlign: "center", marginBottom: 18 }}>
                   <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 22, fontWeight: 700, color: "var(--ink)", letterSpacing: ".02em" }}>VACCINATION CERTIFICATE</div>
                   <div style={{ fontSize: 12, color: "var(--txt3)", marginTop: 4 }}>Date: {fmt(todayStr())} · Cert No: VC-{pet.id}-{new Date().getFullYear()}</div>
                 </div>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 18, padding: "14px 18px", background: "var(--canvas)", borderRadius: 10 }}>
+                <div className="g2" style={{ marginBottom: 18, padding: "14px 18px", background: "var(--canvas)", borderRadius: 10 }}>
                   <div><div style={{ fontSize: 11, fontWeight: 800, color: "var(--txt3)", textTransform: "uppercase", marginBottom: 6 }}>Pet Details</div>
                     <table style={{ fontSize: 13, width: "100%", border: "none" }}><tbody>
                       <tr><td style={{ border: "none", padding: "3px 0", fontWeight: 700, width: "40%" }}>Name:</td><td style={{ border: "none", padding: "3px 0" }}>{pet.name}</td></tr>
@@ -4324,7 +4509,7 @@ function CertificatesPage() {
                     </tbody>
                   </table>
                 </div>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 40, marginTop: 30, paddingTop: 16, borderTop: "1px solid var(--bdr)" }}>
+                <div className="g2 g-cert-sign" style={{ marginTop: 30, paddingTop: 16, borderTop: "1px solid var(--bdr)" }}>
                   <div style={{ textAlign: "center" }}><div style={{ borderTop: "2px solid var(--ink)", paddingTop: 8, fontSize: 12, color: "var(--txt2)", fontWeight: 600 }}>Authorized Signature & Stamp</div><div style={{ fontSize: 11, color: "var(--txt3)", marginTop: 3 }}>{db.clinicSettings.signature || db.clinicSettings.doctor}</div></div>
                   <div style={{ textAlign: "center" }}><div style={{ borderTop: "2px solid var(--ink)", paddingTop: 8, fontSize: 12, color: "var(--txt2)", fontWeight: 600 }}>Pet Owner's Signature</div><div style={{ fontSize: 11, color: "var(--txt3)", marginTop: 3 }}>{owner?.name}</div></div>
                 </div>
@@ -4344,7 +4529,7 @@ function CertificatesPage() {
                   <p>I understand that the veterinary team will exercise due care and skill, and I have disclosed all known medical history, allergies, and current medications. I acknowledge that no guarantees have been made regarding the outcome of treatment.</p>
                   <p>I agree to be responsible for all associated costs of treatment as per the clinic's fee schedule.</p>
                 </div>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 40, marginTop: 30, paddingTop: 16, borderTop: "1px solid var(--bdr)" }}>
+                <div className="g2 g-cert-sign" style={{ marginTop: 30, paddingTop: 16, borderTop: "1px solid var(--bdr)" }}>
                   <div style={{ textAlign: "center" }}><div style={{ borderTop: "2px solid var(--ink)", paddingTop: 8, fontSize: 12, color: "var(--txt2)", fontWeight: 600 }}>Veterinarian Signature</div><div style={{ fontSize: 11, color: "var(--txt3)", marginTop: 3 }}>{db.clinicSettings.signature || db.clinicSettings.doctor}</div></div>
                   <div style={{ textAlign: "center" }}><div style={{ borderTop: "2px solid var(--ink)", paddingTop: 8, fontSize: 12, color: "var(--txt2)", fontWeight: 600 }}>Pet Owner's Signature</div><div style={{ fontSize: 11, color: "var(--txt3)", marginTop: 3 }}>{owner?.name} · Date: ___________</div></div>
                 </div>
@@ -4359,12 +4544,12 @@ function CertificatesPage() {
                 <div style={{ fontSize: 14, lineHeight: 1.8, marginBottom: 14 }}>
                   This is to certify that <strong>{pet.name}</strong>, a <strong>{pet.sex} {pet.type} ({pet.breed})</strong>, owned by <strong>{owner?.name}</strong>, was examined on <strong>{fmt(todayStr())}</strong> and found to be in good health and free from any clinical signs of infectious or communicable disease at the time of examination.
                 </div>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12, padding: "14px", background: "var(--canvas)", borderRadius: 9, marginBottom: 18, border: "1px solid var(--bdr)" }}>
+                <div className="g3" style={{ padding: "14px", background: "var(--canvas)", borderRadius: 9, marginBottom: 18, border: "1px solid var(--bdr)" }}>
                   {[["Weight", `${pet.weight} kg`], ["Temperature", "101.5°F"], ["Heart Rate", "88 bpm"], ["Resp. Rate", "20/min"], ["Body Cond.", "3/5 - Good"], ["Vaccination", petVaccs.length > 0 ? "Up to date" : "Pending"]].map(([k, v]) => (
                     <div key={k}><div style={{ fontSize: 10, fontWeight: 800, color: "var(--txt3)", textTransform: "uppercase" }}>{k}</div><div style={{ fontSize: 14, fontWeight: 700, marginTop: 2 }}>{v}</div></div>
                   ))}
                 </div>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 40, marginTop: 30, paddingTop: 16, borderTop: "1px solid var(--bdr)" }}>
+                <div className="g2 g-cert-sign" style={{ marginTop: 30, paddingTop: 16, borderTop: "1px solid var(--bdr)" }}>
                   <div style={{ textAlign: "center" }}><div style={{ borderTop: "2px solid var(--ink)", paddingTop: 8, fontSize: 12, color: "var(--txt2)", fontWeight: 600 }}>Veterinarian Signature & Stamp</div><div style={{ fontSize: 11, color: "var(--txt3)", marginTop: 3 }}>{db.clinicSettings.signature || db.clinicSettings.doctor}</div></div>
                   <div style={{ textAlign: "center" }}><div style={{ borderTop: "2px solid var(--ink)", paddingTop: 8, fontSize: 12, color: "var(--txt2)", fontWeight: 600 }}>Date of Examination</div><div style={{ fontSize: 13, fontWeight: 700, marginTop: 3 }}>{fmt(todayStr())}</div></div>
                 </div>
@@ -4375,7 +4560,7 @@ function CertificatesPage() {
                 <div style={{ fontSize: 48, marginBottom: 16 }}>{CERT_TYPES.find(c=>c.id===certType)?.icon}</div>
                 <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 20, fontWeight: 700, marginBottom: 8 }}>{CERT_TYPES.find(c=>c.id===certType)?.label} for {pet.name}</div>
                 <div style={{ fontSize: 13, color: "var(--txt2)", marginBottom: 20 }}>Pet: {pet.name} ({pet.breed}) · Owner: {owner?.name} · Date: {fmt(todayStr())}</div>
-                <button className="btn btn-gold" onClick={() => toast("Certificate generated and ready to print!", "success")}>o. Generate & Print</button>
+                <button className="btn btn-gold" onClick={() => toast("Certificate generated and ready to print!", "success")}>✅ Generate & Print</button>
               </div>
             )}
           </div>
@@ -4398,7 +4583,7 @@ function SystemAdminPage({ initialTab = "users" }) {
   const [userFilter, setUserFilter] = useState("all");
 
   const ROLE_COLORS = { doctor: "var(--teal)", receptionist: "var(--gold-dim)", admin: "var(--red)", owner: "var(--txt3)" };
-  const ROLE_ICONS = { doctor: "Y'?s.️", receptionist: "Y'?Y'", admin: "Y>️", owner: "Y " };
+  const ROLE_ICONS = { doctor: "👨‍⚕️", receptionist: "👩‍💼", admin: "🛡️", owner: "🏠" };
 
   const saveUser = () => {
     if (!form.name || !form.email) { toast("Name and email required", "error"); return; }
@@ -4430,7 +4615,7 @@ function SystemAdminPage({ initialTab = "users" }) {
 
   return (
     <div className="fu">
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 22 }}>
+      <div className="page-toolbar">
         <div>
           <div className="pt">System Administration</div>
           <div className="ps">Manage users, sessions, roles, and system settings</div>
@@ -4439,12 +4624,12 @@ function SystemAdminPage({ initialTab = "users" }) {
       </div>
 
       {/* Stats */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 14, marginBottom: 22 }}>
+      <div className="g4" style={{ marginBottom: 22 }}>
         {[
           { l: "Total Users", v: db.users.length, i: "👥", c: "c1" },
           { l: "Pending Approval", v: pendingUsers.length, i: "⏳", c: "c2" },
           { l: "Doctors", v: db.users.filter(u=>u.role==="doctor").length, i: "🩺", c: "c2" },
-          { l: "Pet Owners", v: db.users.filter(u=>u.role==="owner").length, i: "Y ", c: "c4" },
+          { l: "Pet Owners", v: db.users.filter(u=>u.role==="owner").length, i: "🏠", c: "c4" },
         ].map((s, i) => (
           <div key={i} className={`scard ${s.c}`}><div className="sico" style={{ fontSize: 22 }}>{s.i}</div><div className="sval" style={{ fontSize: 30 }}>{s.v}</div><div className="slbl">{s.l}</div></div>
         ))}
@@ -4490,8 +4675,8 @@ function SystemAdminPage({ initialTab = "users" }) {
                       <td style={{ fontSize: 11, color: "var(--txt3)", fontFamily: "'JetBrains Mono',monospace" }}>{u.lastLogin ? new Date(u.lastLogin).toLocaleDateString("en-IN") : "Never"}</td>
                       <td>
                         <div style={{ display: "flex", gap: 5 }}>
-                          <button className="btn btn-ghost btn-xs" onClick={() => { setEditUser(u); setForm({ name: u.name, email: u.email, mobile: u.mobile||"", password: "", role: u.role, active: u.active !== false }); setShowAdd(true); }}>o️ Edit</button>
-                          <button className="btn btn-ghost btn-xs" style={{ color: "var(--red)" }} onClick={() => { if(window.confirm(`Delete user ${u.name}?`)) { db.users = db.users.filter(x=>x.id!==u.id); saveDB(); toast("User deleted",""); } }}>Y-'️</button>
+                          <button className="btn btn-ghost btn-xs" onClick={() => { setEditUser(u); setForm({ name: u.name, email: u.email, mobile: u.mobile||"", password: "", role: u.role, active: u.active !== false }); setShowAdd(true); }}>✏️ Edit</button>
+                          <button className="btn btn-ghost btn-xs" style={{ color: "var(--red)" }} onClick={() => { if(window.confirm(`Delete user ${u.name}?`)) { db.users = db.users.filter(x=>x.id!==u.id); saveDB(); toast("User deleted",""); } }}>🗑️</button>
                         </div>
                       </td>
                     </tr>
@@ -4510,7 +4695,7 @@ function SystemAdminPage({ initialTab = "users" }) {
             <div className="alert a-info" style={{ marginBottom: 14 }}>Sessions are tracked per browser tab/login. JWT tokens stored in localStorage with 24-hour expiry.</div>
             <div style={{ background: "var(--canvas)", borderRadius: 10, padding: 16, border: "1px solid var(--bdr)", marginBottom: 14 }}>
               <div style={{ fontWeight: 800, fontSize: 13, marginBottom: 12 }}>Current Session</div>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 12 }}>
+              <div className="g3">
                 {[
                   { l: "Session Key", v: "rpc_token", mono: true },
                   { l: "Expires In", v: "24 hours", mono: false },
@@ -4524,16 +4709,16 @@ function SystemAdminPage({ initialTab = "users" }) {
               </div>
             </div>
             <div style={{ fontWeight: 800, fontSize: 13, marginBottom: 10 }}>Session Management</div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+            <div className="g2">
               <div style={{ padding: "14px 16px", background: "var(--white)", borderRadius: 10, border: "1px solid var(--bdr2)" }}>
-                <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 6 }}>Y" Auto-Logout Settings</div>
+                <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 6 }}>🔐 Auto-Logout Settings</div>
                 <select className="inp" style={{ marginBottom: 10 }}><option>After 30 minutes idle</option><option>After 1 hour idle</option><option>After 4 hours idle</option><option>Never (manual logout)</option></select>
                 <button className="btn btn-ink btn-sm" onClick={() => toast("Auto-logout settings saved!", "success")}>Save</button>
               </div>
               <div style={{ padding: "14px 16px", background: "var(--white)", borderRadius: 10, border: "1px solid var(--bdr2)" }}>
-                <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 6 }}>Y"' Token Management</div>
+                <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 6 }}>🔐 Token Management</div>
                 <div style={{ fontSize: 12, color: "var(--txt2)", marginBottom: 10 }}>Invalidate all sessions and force re-login for all users.</div>
-                <button className="btn btn-red btn-sm" onClick={() => { localStorage.removeItem("rpc_token"); toast("All sessions cleared!", "success"); setTimeout(() => window.location.reload(), 1000); }}>s ️ Invalidate All Sessions</button>
+                <button className="btn btn-red btn-sm" onClick={() => { localStorage.removeItem("rpc_token"); toast("All sessions cleared!", "success"); setTimeout(() => window.location.reload(), 1000); }}>⚠️ Invalidate All Sessions</button>
               </div>
             </div>
           </div>
@@ -4547,6 +4732,7 @@ function SystemAdminPage({ initialTab = "users" }) {
             <div className="card-head"><span className="card-title">Role-Based Access Control</span><span style={{ fontSize: 12, color: "var(--txt3)" }}>Click to toggle</span></div>
             <div className="card-body">
               <div style={{ overflowX: "auto" }}>
+                <div className="tbl-wrap">
                 <table>
                   <thead>
                     <tr>
@@ -4578,6 +4764,7 @@ function SystemAdminPage({ initialTab = "users" }) {
                     ))}
                   </tbody>
                 </table>
+                </div>
               </div>
             </div>
           </div>
@@ -4619,7 +4806,7 @@ function SystemAdminPage({ initialTab = "users" }) {
       {showAdd && (
         <div className="ov" onClick={() => setShowAdd(false)}>
           <div className="modal" onClick={e => e.stopPropagation()}>
-            <div className="m-head"><span className="m-title">{editUser ? "o️ Edit User" : "z. Add New User"}</span><button className="btn-ico" onClick={() => setShowAdd(false)} style={{ fontSize: 16 }}>o.</button></div>
+            <div className="m-head"><span className="m-title">{editUser ? "✏️ Edit User" : "➕ Add New User"}</span><button className="btn-ico" onClick={() => setShowAdd(false)} style={{ fontSize: 16 }}>✕</button></div>
             <div className="m-body">
               <div className="inp-row cols2">
                 <div className="inp-g"><label className="inp-lbl">Full Name *</label><input className="inp" value={form.name} onChange={e => setForm({...form, name: e.target.value})} placeholder="Full name" /></div>
@@ -4629,8 +4816,8 @@ function SystemAdminPage({ initialTab = "users" }) {
               <div className="inp-g"><label className="inp-lbl">{editUser ? "New Password (leave blank to keep)" : "Password *"}</label><input className="inp" type="password" value={form.password} onChange={e => setForm({...form, password: e.target.value})} placeholder="Min 6 characters" /></div>
               <div className="inp-g">
                 <label className="inp-lbl">Role *</label>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-                  {[["doctor","Doctor","Y'?s.️"],["receptionist","Receptionist","Y'?Y'"],["admin","Admin","Y>️"],["owner","Pet Owner","Y "]].map(([val,lbl,ico]) => (
+                <div className="g2">
+                  {[["doctor","Doctor","👨‍⚕️"],["receptionist","Receptionist","👩‍💼"],["admin","Admin","🛡️"],["owner","Pet Owner","🏠"]].map(([val,lbl,ico]) => (
                     <div key={val} onClick={() => setForm({...form, role: val})} style={{ border: `2px solid ${form.role===val?"var(--gold)":"var(--bdr)"}`, background: form.role===val?"var(--gold-pale)":"var(--white)", borderRadius: 9, padding: "10px 12px", cursor: "pointer", display: "flex", alignItems: "center", gap: 8, transition: "all .15s" }}>
                       <span style={{ fontSize: 18 }}>{ico}</span>
                       <span style={{ fontSize: 13, fontWeight: 700, color: form.role===val?"var(--gold-dim)":"var(--txt)" }}>{lbl}</span>
@@ -4645,7 +4832,7 @@ function SystemAdminPage({ initialTab = "users" }) {
                 </label>
               </div>
             </div>
-            <div className="m-foot"><button className="btn btn-ghost" onClick={() => setShowAdd(false)}>Cancel</button><button className="btn btn-gold" onClick={saveUser}>{editUser ? "Y' Update User" : "o. Create User"}</button></div>
+            <div className="m-foot"><button className="btn btn-ghost" onClick={() => setShowAdd(false)}>Cancel</button><button className="btn btn-gold" onClick={saveUser}>{editUser ? "💾 Update User" : "➕ Create User"}</button></div>
           </div>
         </div>
       )}
@@ -4825,14 +5012,14 @@ function OwnerPortal({ page, user }) {
     return (
       <div className="fu">
         <div className="pt" style={{ marginBottom: 18 }}>My Pets 🐾</div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 16 }}>
+        <div className="g2">
           {myPets.map(pet => {
             const visits = db.visits.filter(v => v.petId === pet.id);
             const lastVisit = visits.sort((a, b) => new Date(b.date) - new Date(a.date))[0];
             return (
               <div key={pet.id} className="pcard" onClick={() => setViewPet(pet)} style={{ background: `linear-gradient(135deg,var(--white) 60%,${pet.color})`, cursor: "pointer" }}>
                 <div className="pava" style={{ background: pet.color, fontSize: 36, width: 70, height: 70 }}>{pet.photo}</div>
-                <div style={{ flex: 1 }}>
+                <div style={{ flex: 1, minWidth: 0 }} className="q-main">
                   <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 20, fontWeight: 700 }}>{pet.name}</div>
                   <div style={{ fontSize: 13, color: "var(--txt2)", marginTop: 2 }}>{pet.breed} · {pet.type}</div>
                   <div style={{ fontSize: 12, color: "var(--txt3)", marginTop: 2 }}>{calcAge(pet.dob)} · {pet.sex} · {pet.weight}kg</div>
@@ -4931,7 +5118,7 @@ function OwnerPortal({ page, user }) {
                 {petVaccs.map(v => (
                   <div key={v.id} style={{ display: "flex", alignItems: "center", gap: 12, padding: "11px 0", borderBottom: "1px solid var(--bdr3)" }}>
                     <div style={{ fontSize: 22 }}>💉</div>
-                    <div style={{ flex: 1 }}>
+                    <div style={{ flex: 1, minWidth: 0 }} className="q-main">
                       <div style={{ fontWeight: 700 }}>{v.vaccine}</div>
                       <div style={{ fontSize: 12, color: "var(--txt2)" }}>Given: {fmt(v.given)} · Next: {fmt(v.next)}</div>
                     </div>
@@ -5152,7 +5339,7 @@ export default function App() {
 
   const switchUser = async (targetUserId) => {
     if (targetUserId === null) {
-      // Add new account ?" show login screen without clearing current session
+      // Add new account — show login screen without clearing current session
       setUser(null);
       setAuthView("login");
     } else {

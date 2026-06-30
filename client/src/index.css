@@ -52,15 +52,24 @@
 
 body {
   margin: 0;
+  width: 100%;
+  overflow-x: hidden;
+}
+
+html {
+  width: 100%;
+  overflow-x: hidden;
 }
 
 #root {
-  width: 1126px;
-  max-width: 100%;
-  margin: 0 auto;
-  text-align: center;
-  border-inline: 1px solid var(--border);
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  text-align: left;
+  border: none;
   min-height: 100svh;
+  height: 100vh;
+  height: 100dvh;
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
