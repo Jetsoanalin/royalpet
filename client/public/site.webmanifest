@@ -1,0 +1,31 @@
+{
+  "name": "Royal Pet Clinic",
+  "short_name": "Royal Pet",
+  "description": "Complete veterinary clinic management system for queue, consultation, billing, vaccination, and inventory.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0d1f2d",
+  "theme_color": "#0d1f2d",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/apple-touch-icon.svg",
+      "sizes": "180x180",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/og-image.jpg",
+      "sizes": "1200x630",
+      "type": "image/jpeg",
+      "purpose": "any"
+    }
+  ],
+  "categories": ["medical", "business", "productivity"]
+}
