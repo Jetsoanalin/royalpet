@@ -1,10 +1,6 @@
-const path = require("path");
-
-module.paths.unshift(path.join(__dirname, "..", "..", "server", "node_modules"));
-
-const app = require("../../server/src/app");
-const { saveBackup } = require("../../server/src/services/backupService");
-const logger = require("../../server/src/config/logger");
+const app = require("../server/src/app");
+const { saveBackup } = require("../server/src/services/backupService");
+const logger = require("../server/src/config/logger");
 
 module.exports = async (req, res) => {
   const auth = req.headers.authorization || "";

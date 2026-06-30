@@ -7,6 +7,11 @@ const apiLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   skip: () => env.NODE_ENV === "test",
+  validate: {
+    ip: false,
+    xForwardedForHeader: false,
+    trustProxy: false,
+  },
 });
 
 module.exports = { apiLimiter };

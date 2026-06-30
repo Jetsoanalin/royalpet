@@ -434,9 +434,17 @@ const apiRequest = async (path, options = {}, tokenOverride) => {
     headers,
   });
 
-  const payload = await res.json().catch(() => ({}));
+  let payload = {};
+  const contentType = res.headers.get("content-type") || "";
+  if (contentType.includes("application/json")) {
+    payload = await res.json().catch(() => ({}));
+  } else if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new Error(text?.slice(0, 120) || `Server error (${res.status})`);
+  }
+
   if (!res.ok) {
-    const message = payload?.error?.message || payload?.error || payload?.message || "Request failed";
+    const message = payload?.error?.message || payload?.error || payload?.message || `Request failed (${res.status})`;
     throw new Error(message);
   }
 
@@ -788,7 +796,10 @@ function LoginPage({ onLogin, goRegister, activeSessions, onSwitchUser }) {
       });
       await onLogin(session);
     } catch (error) {
-      setErr(error.message || "Invalid email or password.");
+      const msg = error.message || "Invalid email or password.";
+      setErr(/failed to fetch|network|timeout/i.test(msg)
+        ? "Cannot reach the server. Check that Vercel env vars (JWT_SECRET, Appwrite) are configured and redeploy."
+        : msg);
       setLoading(false);
     }
   };

@@ -26,6 +26,10 @@ const { startReminderScheduler } = require("./services/reminderService");
 
 const app = express();
 
+if (process.env.VERCEL) {
+  app.set("trust proxy", 1);
+}
+
 app.use(securityMiddleware);
 app.use(requestLogger);
 app.use(apiLimiter);

@@ -1,14 +1,16 @@
 {
   "version": 2,
-  "buildCommand": "cd client && npm ci && npm run build && cd ../server && npm ci",
+  "buildCommand": "npm run build --prefix client",
   "outputDirectory": "client/dist",
-  "installCommand": "npm ci --prefix client && npm ci --prefix server",
+  "installCommand": "npm ci && npm ci --prefix client && npm ci --prefix server",
   "functions": {
     "api/index.js": {
-      "includeFiles": "server/**"
+      "maxDuration": 30,
+      "includeFiles": "server/src/**"
     },
     "api/cron/backup.js": {
-      "includeFiles": "server/**"
+      "maxDuration": 60,
+      "includeFiles": "server/src/**"
     }
   },
   "rewrites": [

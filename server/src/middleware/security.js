@@ -7,7 +7,7 @@ const buildCors = () => {
   if (origins.length) {
     return cors({ origin: origins, credentials: true });
   }
-  if (!env.isProd) {
+  if (!env.isProd || process.env.VERCEL) {
     return cors({ origin: true, credentials: true });
   }
   return cors({ origin: false });
