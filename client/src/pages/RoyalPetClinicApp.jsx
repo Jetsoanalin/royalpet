@@ -1,4 +1,9 @@
-﻿import { useState, useEffect, useCallback, createContext, useContext, useRef } from "react";
+﻿import { useState, useEffect, useCallback, createContext, useContext, useRef, useMemo } from "react";
+import {
+  BREEDS_BY_TYPE, VITAL_OPTIONS, DEFAULT_ROLE_PERMISSIONS, PERMISSION_LABELS,
+  dobFromAge, displayPetAge, runGlobalSearch, normalizePaymentMethod, buildInvoicePrintHtml,
+  canAccessPage,
+} from "../utils/clinicHelpers";
 
 /* ROYAL PET CLINIC - Complete Management System
    Full-stack simulation: Auth, Routing, Role-based Dashboards, All Modules */
@@ -209,7 +214,20 @@ const GlobalStyles = () => (
     .chip{display:inline-flex;align-items:center;gap:5px;padding:4px 11px;border-radius:20px;font-size:12px;font-weight:600;background:var(--canvas);border:1px solid var(--bdr);cursor:pointer;transition:all .18s}
     .chip:hover,.chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
     @media(max-width:1100px){.stats-grid{grid-template-columns:repeat(2,1fr)}}
-    @media(max-width:768px){.stats-grid{grid-template-columns:1fr 1fr};.sidebar{display:none}}
+    @media(max-width:768px){
+      .stats-grid{grid-template-columns:1fr 1fr}
+      .content{padding:16px}
+      .topbar{padding:0 12px;gap:8px}
+      .srch{flex:1;min-width:0;margin-left:0!important}
+      .modal,.modal-lg{width:96%!important;max-width:96%!important;margin:12px}
+      .cols2,.cols3{grid-template-columns:1fr!important}
+      .sidebar{position:fixed;left:0;top:0;bottom:0;transform:translateX(-100%);transition:transform .3s;box-shadow:var(--s4)}
+      .sidebar.mobile-open{transform:translateX(0)}
+      .sidebar-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:199}
+      .sidebar-backdrop.show{display:block}
+      .hamburger{display:flex!important}
+    }
+    .hamburger{display:none;align-items:center;justify-content:center}
   `}</style>
 );
 
@@ -553,13 +571,6 @@ function LoginPage({ onLogin, goRegister, activeSessions, onSwitchUser }) {
   const [err, setErr] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const DEMOS = [
-    { label: "Doctor", email: "doctor@royalpet.com", pass: "Doctor@123", icon: "👨‍⚕️", desc: "Full clinical access", bg: "#0d1f2d" },
-    { label: "Receptionist", email: "staff@royalpet.com", pass: "Staff@123", icon: "👩‍💼", desc: "Appointments & billing", bg: "#1d6a6a" },
-    { label: "Admin", email: "admin@royalpet.com", pass: "Admin@123", icon: "🛠️", desc: "System administration", bg: "#7a1a1a" },
-    { label: "Pet Owner", email: "owner@royalpet.com", pass: "Owner@123", icon: "🐾", desc: "View records & cards", bg: "#7a5c1e" },
-  ];
-
   const ROLE_LABELS = { doctor: "Veterinarian", receptionist: "Receptionist", admin: "Admin", owner: "Pet Owner" };
 
   const doLogin = async (em, pw) => {
@@ -577,17 +588,7 @@ function LoginPage({ onLogin, goRegister, activeSessions, onSwitchUser }) {
     }
   };
 
-  const quickLogin = async (acc) => {
-    setEmail(acc.email);
-    setPassword(acc.pass);
-    try {
-      await doLogin(acc.email, acc.pass);
-    } catch {
-      setErr("Invalid email or password.");
-    }
-  };
-
-  const ROLE_COLORS = { doctor: "#1a3347", receptionist: "#1d6a6a", admin: "#7a1a1a", owner: "#7a5c1e" };
+const ROLE_COLORS = { doctor: "#1a3347", receptionist: "#1d6a6a", admin: "#7a1a1a", owner: "#7a5c1e" };
 
   return (
     <div style={{ minHeight: "100vh", background: "linear-gradient(135deg,#0d1f2d 0%,#1a3347 50%,#1a4a5a 100%)", display: "flex", alignItems: "center", justifyContent: "center", padding: "20px" }}>
@@ -630,41 +631,7 @@ function LoginPage({ onLogin, goRegister, activeSessions, onSwitchUser }) {
         {/* Body */}
         <div style={{ background: "#fff", borderRadius: "0 0 20px 20px", padding: "28px 32px", boxShadow: "0 20px 60px rgba(0,0,0,.3)" }}>
 
-          {/* Demo Buttons */}
-          <div style={{ marginBottom: 22 }}>
-            <div style={{ textAlign: "center", fontSize: 12, fontWeight: 800, color: "#8a9aaa", textTransform: "uppercase", letterSpacing: ".1em", marginBottom: 12 }}>
-              
-            </div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-              {DEMOS.map((acc) => (
-                <button
-                  key={acc.label}
-                  onClick={() => quickLogin(acc)}
-                  style={{
-                    background: acc.bg, color: "#fff", border: "none", borderRadius: 12,
-                    padding: "14px 8px", cursor: "pointer", textAlign: "center",
-                    transition: "transform .15s, box-shadow .15s", fontFamily: "inherit",
-                    boxShadow: "0 4px 12px rgba(0,0,0,.2)"
-                  }}
-                  onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 8px 20px rgba(0,0,0,.3)"; }}
-                  onMouseLeave={e => { e.currentTarget.style.transform = ""; e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,0,0,.2)"; }}
-                >
-                  <div style={{ fontSize: 28, marginBottom: 6 }}>{acc.icon}</div>
-                  <div style={{ fontSize: 13, fontWeight: 800 }}>{acc.label}</div>
-                  <div style={{ fontSize: 10, opacity: .7, marginTop: 3, lineHeight: 1.3 }}>{acc.desc}</div>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Divider */}
-          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 18 }}>
-            <div style={{ flex: 1, height: 1, background: "#e0dbd4" }} />
-            <span style={{ fontSize: 11, color: "#b0bcc8", fontWeight: 700 }}>OR SIGN IN MANUALLY</span>
-            <div style={{ flex: 1, height: 1, background: "#e0dbd4" }} />
-          </div>
-
-          {/* Manual form */}
+                    {/* Manual form */}
           {err && (
             <div style={{ background: "#fdf0ee", border: "1px solid #f0b0a0", color: "#7a0000", padding: "10px 14px", borderRadius: 8, fontSize: 13, marginBottom: 14 }}>
               ⚠️ {err}
@@ -738,7 +705,7 @@ function RegisterPage({ onBack, onSuccess }) {
     if (form.role === "receptionist" && form.receptionCode.trim() !== RECEPTION_REG_CODE) { setErr("Invalid receptionist registration code."); return; }
     setLoading(true);
     try {
-      await apiRequest("/auth/register", {
+      const result = await apiRequest("/auth/register", {
         method: "POST",
         body: JSON.stringify({
           name: form.name,
@@ -749,7 +716,11 @@ function RegisterPage({ onBack, onSuccess }) {
         }),
       });
       setLoading(false);
-      onSuccess();
+      if (result?.pendingApproval || (form.role === "doctor" || form.role === "receptionist")) {
+        onSuccess("pending");
+      } else {
+        onSuccess();
+      }
     } catch (error) {
       setErr(error.message || "Registration failed.");
       setLoading(false);
@@ -877,7 +848,7 @@ const NAV_ADMIN = [
   { id: "settings", label: "Settings", icon: "⚙️", section: "" },
 ];
 const NAV_RECEP = NAV_DOCTOR
-  .filter((item) => !["analytics","billing","inventory","suppliers","reminders","settings"].includes(item.id))
+  .filter((item) => !["billing","inventory","suppliers","reminders","settings"].includes(item.id))
   .map((item) => ({ ...item, section: item.section === "ADMIN" ? "" : item.section }));
 const NAV_OWNER = [
   { id: "owner-home", label: "My Pets", icon: "🐾", section: "MY PORTAL" },
@@ -889,7 +860,7 @@ const NAV_OWNER = [
   { id: "owner-prescriptions", label: "Prescriptions", icon: "💊", section: "" },
 ];
 
-function Sidebar({ page, setPage, user, collapsed, setCollapsed }) {
+function Sidebar({ page, setPage, user, collapsed, setCollapsed, mobileOpen, setMobileOpen }) {
   const navItems = user.role === "admin" ? NAV_ADMIN : user.role === "doctor" ? NAV_DOCTOR : user.role === "receptionist" ? NAV_RECEP : NAV_OWNER;
   const db = initDB();
   const lowStock = db.inventory.filter(i => i.stock < i.minStock).length;
@@ -899,7 +870,9 @@ function Sidebar({ page, setPage, user, collapsed, setCollapsed }) {
   let lastSec = "";
 
   return (
-    <div className={`sidebar${collapsed ? " mini" : ""}`}>
+    <>
+      <div className={`sidebar-backdrop${mobileOpen ? " show" : ""}`} onClick={() => setMobileOpen && setMobileOpen(false)} />
+      <div className={`sidebar${collapsed ? " mini" : ""}${mobileOpen ? " mobile-open" : ""}`}>
       <div className="s-logo">
         <div className="s-logo-icon">🐾</div>
         {!collapsed && <div><div className="s-logo-name">Royal Pet Clinic</div><div className="s-logo-sub">Management System</div></div>}
@@ -925,7 +898,7 @@ function Sidebar({ page, setPage, user, collapsed, setCollapsed }) {
             <div key={item.id}>
               {showSec && !collapsed && <div className="s-sec-label">{item.section}</div>}
               {showSec && collapsed && <div className="s-divider" />}
-              <div className={`s-item${page === item.id ? " on" : ""}`} onClick={() => setPage(item.id)} title={collapsed ? item.label : ""}>
+              <div className={`s-item${page === item.id ? " on" : ""}`} onClick={() => { setPage(item.id); setMobileOpen && setMobileOpen(false); }} title={collapsed ? item.label : ""}>
                 <span className="s-icon">{item.icon}</span>
                 {!collapsed && <span>{item.label}</span>}
                 {!collapsed && badge && <span className="s-badge">{badge}</span>}
@@ -940,10 +913,11 @@ function Sidebar({ page, setPage, user, collapsed, setCollapsed }) {
         {!collapsed && <span style={{ fontSize: 12, color: "rgba(255,255,255,.3)" }}>Collapse</span>}
       </div>
     </div>
+    </>
   );
 }
 
-function Topbar({ page, setPage, user, onLogout, onSwitchUser, globalSearch, setGlobalSearch, activeSessions }) {
+function Topbar({ page, setPage, user, onLogout, onSwitchUser, globalSearch, setGlobalSearch, activeSessions, setConsultVisit, onMenuToggle }) {
   const { db } = useApp();
   const TITLES = { dashboard: "Dashboard", queue: "Patient Queue", planner: "Daily Planner", appointments: "Appointments", patients: "Owners & Pets", consultation: "Consultation Room", vaccination: "Vaccination", timeline: "Patient Timeline", certificates: "Certificates & Forms", billing: "Billing", inventory: "Inventory", suppliers: "Supplier Payments", analytics: "Analytics & Reports", reminders: "Reminders", "system-admin": "System Administration", "admin-users": "User Management", "admin-sessions": "Active Sessions", "admin-activity": "Activity Log", settings: "Settings", "owner-home": "My Pets", "owner-petinfo": "Pet Information", "owner-book-apt": "Book Appointment", "owner-records": "Medical Records", "owner-vaccines": "Vaccination Card", "owner-appointments": "My Appointments", "owner-prescriptions": "Prescriptions" };
   const ROLE_COLORS = { doctor: "#1a3347", receptionist: "#1d6a6a", admin: "#8b1a1a", owner: "#7a5c1e" };
@@ -951,7 +925,9 @@ function Topbar({ page, setPage, user, onLogout, onSwitchUser, globalSearch, set
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showNotif, setShowNotif] = useState(false);
   const [showSessions, setShowSessions] = useState(false);
-  const [readNotifs, setReadNotifs] = useState([]);
+  const [readNotifs, setReadNotifs] = useState(() => { try { return JSON.parse(localStorage.getItem("rpc_read_notifs") || "[]"); } catch { return []; } });
+  const [showSearch, setShowSearch] = useState(false);
+  const searchResults = useMemo(() => runGlobalSearch(db, globalSearch), [db, globalSearch]);
   const now = new Date();
 
   const today = new Date();
@@ -961,27 +937,37 @@ function Topbar({ page, setPage, user, onLogout, onSwitchUser, globalSearch, set
   const overdueVaccs = db.vaccinations.filter(v => v.status === "overdue").length;
   const waitingCount = db.visits.filter(v => v.status === "waiting").length;
   const expiredInventory = db.inventory.filter(i => isValidDate(i.expiry) && new Date(i.expiry) < today);
+  const expiringSoon = db.inventory.filter(i => {
+    if (!isValidDate(i.expiry)) return false;
+    const days = (new Date(i.expiry) - today) / (1000 * 60 * 60 * 24);
+    return days >= 0 && days <= 30;
+  });
 
   const notifications = [
     ...db.visits.filter(v => v.status === "waiting").map(v => { const p = db.pets.find(p => p.id === v.petId); return { key: `visit-${v.id}`, icon: "🚶", msg: `${p?.name || "Patient"} is waiting${v.emergency ? " - EMERGENCY" : ""}`, type: v.emergency ? "error" : "warning", time: "Now", page: "queue", action: "Open Queue" }; }),
     ...db.inventory.filter(i => i.stock < i.minStock).map(i => ({ key: `inv-${i.id}`, icon: "📦", msg: `${i.name} - Low stock (${i.stock} ${i.unit})`, type: "warning", time: "Today", page: "inventory", action: "Open Inventory" })),
     ...expiredInventory.map(i => ({ key: `exp-${i.id}`, icon: "⌛", msg: `${i.name} expired on ${fmt(i.expiry)}`, type: "error", time: "Expired", page: "inventory", action: "Review Stock" })),
+    ...expiringSoon.map(i => ({ key: `expsoon-${i.id}`, icon: "⏰", msg: `${i.name} expiring on ${fmt(i.expiry)}`, type: "warning", time: "Soon", page: "inventory", action: "Review Stock" })),
     ...db.vaccinations.filter(v => v.status === "overdue").slice(0,3).map(v => { const p = db.pets.find(p => p.id === v.petId); return { key: `vacc-${v.id}`, icon: "💉", msg: `${p?.name || "Pet"}: ${v.vaccine} overdue`, type: "error", time: "Overdue", page: "reminders", action: "Open Reminders" }; }),
-  ].slice(0, 10);
+  ].slice(0, 12);
   const unreadNotifications = notifications.filter(n => !readNotifs.includes(n.key));
   const totalNotifs = unreadNotifications.length;
 
   const markAllRead = () => {
     if (unreadNotifications.length === 0) return;
-    setReadNotifs(prev => {
-      const all = new Set(prev);
-      notifications.forEach(n => all.add(n.key));
-      return Array.from(all);
-    });
+    const all = new Set(readNotifs);
+    notifications.forEach(n => all.add(n.key));
+    const next = Array.from(all);
+    setReadNotifs(next);
+    localStorage.setItem("rpc_read_notifs", JSON.stringify(next));
   };
 
   const openNotification = (n) => {
-    setReadNotifs(prev => (prev.includes(n.key) ? prev : [...prev, n.key]));
+    setReadNotifs(prev => {
+      const next = prev.includes(n.key) ? prev : [...prev, n.key];
+      localStorage.setItem("rpc_read_notifs", JSON.stringify(next));
+      return next;
+    });
     setShowNotif(false);
     if (n.page && setPage) setPage(n.page);
   };
@@ -997,14 +983,31 @@ function Topbar({ page, setPage, user, onLogout, onSwitchUser, globalSearch, set
 
   return (
     <div className="topbar" style={{ position: "relative" }}>
+      <button className="btn-ico hamburger" onClick={onMenuToggle} aria-label="Menu">☰</button>
       <div>
         <div style={{ fontSize: 16, fontWeight: 700, fontFamily: "'Cormorant Garamond',serif" }}>{TITLES[page] || page}</div>
         <div style={{ fontSize: 11, color: "var(--txt3)" }}>{now.toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}</div>
       </div>
       {user.role !== "owner" && (
-        <div className="srch" style={{ marginLeft: 20 }}>
+        <div className="srch" style={{ marginLeft: 20, position: "relative" }}>
           <span className="srch-ic">🔍</span>
-          <input className="srch-inp" placeholder="Search pet, owner, case number..." value={globalSearch} onChange={e => setGlobalSearch(e.target.value)} />
+          <input className="srch-inp" placeholder="Search pet, owner, case number..." value={globalSearch}
+            onChange={e => { setGlobalSearch(e.target.value); setShowSearch(true); }}
+            onFocus={() => setShowSearch(true)}
+            onBlur={() => setTimeout(() => setShowSearch(false), 200)} />
+          {showSearch && globalSearch.trim().length >= 2 && (
+            <div style={{ position: "absolute", top: "calc(100% + 6px)", left: 0, right: 0, background: "var(--white)", borderRadius: 10, boxShadow: "var(--s3)", border: "1px solid var(--bdr)", zIndex: 600, maxHeight: 280, overflowY: "auto" }}>
+              {searchResults.length === 0 ? (
+                <div style={{ padding: 14, fontSize: 12, color: "var(--txt3)", textAlign: "center" }}>No results found</div>
+              ) : searchResults.map((r) => (
+                <div key={`${r.type}-${r.id}`} onMouseDown={() => { setShowSearch(false); setGlobalSearch(""); if (r.page) setPage(r.page); if (r.visitId && setConsultVisit) { const visit = db.visits.find(v => v.id === r.visitId); if (visit) setConsultVisit(visit); } }}
+                  style={{ padding: "10px 12px", borderBottom: "1px solid var(--bdr3)", cursor: "pointer" }}>
+                  <div style={{ fontSize: 13, fontWeight: 700 }}>{r.type === "pet" ? "🐾" : r.type === "owner" ? "👤" : "📋"} {r.label}</div>
+                  <div style={{ fontSize: 11, color: "var(--txt3)", marginTop: 2 }}>{r.sub}</div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
       <div style={{ display: "flex", gap: 8, marginLeft: 16, alignItems: "center" }}>
@@ -1851,7 +1854,8 @@ function PatientsPage({ setPage, setConsultVisit, onAddVaccine }) {
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState(null);
   const [showModal, setShowModal] = useState(false);
-  const [form, setForm] = useState({ ownerName: "", mobile: "", email: "", address: "", petName: "", type: "Dog", breed: "", dob: "", sex: "Male", weight: "" });
+  const [form, setForm] = useState({ ownerName: "", mobile: "", email: "", address: "", petName: "", type: "Dog", breed: "", dob: "", age: "", useAge: false, sex: "Male", weight: "" });
+  const breedOptions = BREEDS_BY_TYPE[form.type] || BREEDS_BY_TYPE.Other;
 
   const filtered = db.pets.filter(p => {
     const o = db.owners.find(x => x.id === p.ownerId);
@@ -1859,18 +1863,19 @@ function PatientsPage({ setPage, setConsultVisit, onAddVaccine }) {
   });
 
   const registerPet = () => {
-    const { ownerName, mobile, petName, type, breed, dob, sex, weight } = form;
+    const { ownerName, mobile, petName, type, breed, dob, age, useAge, sex, weight } = form;
     if (!ownerName || !mobile || !petName) { toast("Fill all required fields", "error"); return; }
     let owner = db.owners.find(o => o.mobile === mobile);
     if (!owner) {
       owner = { id: db.owners.length + 1, name: ownerName, mobile, email: form.email, address: form.address };
       db.owners.push(owner);
     }
-    db.pets.push({ id: db.pets.length + 1, name: petName, type, breed, dob: dob || "2023-01-01", sex, weight: parseFloat(weight) || 0, ownerId: owner.id, photo: type === "Dog" ? "🐕" : type === "Cat" ? "🐱" : type === "Bird" ? "🦜" : type === "Rabbit" ? "🐇" : type === "Cattle" ? "🐄" : type === "Horse" ? "🐎" : type === "Reptile" ? "🦎" : type === "Fish" ? "🐟" : "🐾", alerts: [], color: "#f5f0e8" });
+    const resolvedDob = useAge && age ? dobFromAge(age) : (dob || "");
+    db.pets.push({ id: db.pets.length + 1, name: petName, type, breed, dob: resolvedDob || "2023-01-01", age: useAge ? age : "", sex, weight: parseFloat(weight) || 0, ownerId: owner.id, photo: type === "Dog" ? "🐕" : type === "Cat" ? "🐱" : type === "Bird" ? "🦜" : type === "Rabbit" ? "🐇" : type === "Cattle" ? "🐄" : type === "Horse" ? "🐎" : type === "Reptile" ? "🦎" : type === "Fish" ? "🐟" : "🐾", alerts: [], color: "#f5f0e8" });
     saveDB();
     toast(`${petName} registered successfully!`, "success");
     setShowModal(false);
-    setForm({ ownerName: "", mobile: "", email: "", address: "", petName: "", type: "Dog", breed: "", dob: "", sex: "Male", weight: "" });
+    setForm({ ownerName: "", mobile: "", email: "", address: "", petName: "", type: "Dog", breed: "", dob: "", age: "", useAge: false, sex: "Male", weight: "" });
   };
 
   if (selected) return <PetProfile pet={selected} onBack={() => setSelected(null)} setPage={setPage} setConsultVisit={setConsultVisit} />;
@@ -1933,9 +1938,9 @@ function PatientsPage({ setPage, setConsultVisit, onAddVaccine }) {
                 <div style={{ fontSize: 11, fontWeight: 800, color: "var(--txt3)", textTransform: "uppercase", letterSpacing: ".08em", marginBottom: 12 }}>🐾 Pet Details</div>
                 <div className="inp-row cols3">
                   <div className="inp-g" style={{ marginBottom: 10 }}><label className="inp-lbl">Pet Name *</label><input className="inp" placeholder="Pet name" value={form.petName} onChange={e => setForm({ ...form, petName: e.target.value })} /></div>
-                  <div className="inp-g" style={{ marginBottom: 10 }}><label className="inp-lbl">Animal Type</label><select className="inp" value={form.type} onChange={e => setForm({ ...form, type: e.target.value })}>{["Dog", "Cat", "Bird", "Rabbit", "Cattle", "Horse", "Reptile", "Fish", "Hamster", "Guinea Pig", "Other"].map(t => <option key={t}>{t}</option>)}</select></div>
-                  <div className="inp-g" style={{ marginBottom: 10 }}><label className="inp-lbl">Breed</label><input className="inp" placeholder="Breed" value={form.breed} onChange={e => setForm({ ...form, breed: e.target.value })} /></div>
-                  <div className="inp-g" style={{ marginBottom: 0 }}><label className="inp-lbl">Date of Birth</label><input type="date" className="inp" value={form.dob} onChange={e => setForm({ ...form, dob: e.target.value })} /></div>
+                  <div className="inp-g" style={{ marginBottom: 10 }}><label className="inp-lbl">Animal Type</label><select className="inp" value={form.type} onChange={e => setForm({ ...form, type: e.target.value, breed: "" })}>{["Dog", "Cat", "Bird", "Rabbit", "Cattle", "Horse", "Reptile", "Fish", "Hamster", "Guinea Pig", "Other"].map(t => <option key={t}>{t}</option>)}</select></div>
+                  <div className="inp-g" style={{ marginBottom: 10 }}><label className="inp-lbl">Breed</label><select className="inp" value={form.breed} onChange={e => setForm({ ...form, breed: e.target.value })}><option value="">Select breed...</option>{breedOptions.map(b => <option key={b} value={b}>{b}</option>)}</select></div>
+                  <div className="inp-g" style={{ marginBottom: 10 }}><label style={{ display:"flex", alignItems:"center", gap:8, fontSize:12, fontWeight:600, marginBottom:6 }}><input type="checkbox" checked={form.useAge} onChange={e => setForm({ ...form, useAge: e.target.checked })} />Use age instead of DOB</label>{form.useAge ? <input className="inp" type="number" step="0.1" placeholder="Age in years" value={form.age} onChange={e => setForm({ ...form, age: e.target.value })} /> : <input type="date" className="inp" value={form.dob} onChange={e => setForm({ ...form, dob: e.target.value })} />}</div>
                   <div className="inp-g" style={{ marginBottom: 0 }}><label className="inp-lbl">Sex</label><select className="inp" value={form.sex} onChange={e => setForm({ ...form, sex: e.target.value })}><option>Male</option><option>Female</option></select></div>
                   <div className="inp-g" style={{ marginBottom: 0 }}><label className="inp-lbl">Weight (kg)</label><input className="inp" type="number" step="0.1" placeholder="e.g. 12.5" value={form.weight} onChange={e => setForm({ ...form, weight: e.target.value })} /></div>
                 </div>
@@ -2197,6 +2202,37 @@ function CheckGroup({ label, options, values, onChange, notes, onNotes }) {
   );
 }
 
+
+function ImagingGallery({ imaging = [] }) {
+  if (!imaging?.length) return null;
+  return (
+    <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 8 }}>
+      {imaging.map((img, i) => (
+        <a key={i} href={img.data || img.path} target="_blank" rel="noreferrer">
+          <img src={img.data || img.path} alt={img.name || "scan"} style={{ width: 72, height: 72, objectFit: "cover", borderRadius: 8, border: "1px solid var(--bdr)", cursor: "pointer" }} />
+        </a>
+      ))}
+    </div>
+  );
+}
+
+function VitalSelect({ vitalKey, label, unit, norm, value, onChange }) {
+  const opts = VITAL_OPTIONS[vitalKey] || [];
+  const showCustom = value && !opts.includes(value);
+  return (
+    <div className="vbox">
+      <select style={{ border:"none", background:"transparent", textAlign:"center", fontFamily:"'JetBrains Mono',monospace", fontSize:20, fontWeight:500, color:"var(--ink)", width:"100%", outline:"none" }}
+        value={showCustom ? "Custom" : (value || "—")} onChange={e => { if (e.target.value === "Custom") onChange(""); else onChange(e.target.value === "—" ? "" : e.target.value); }}>
+        {opts.map(o => <option key={o} value={o}>{o}</option>)}
+      </select>
+      {(showCustom || !value) && <input style={{ border:"1px solid var(--bdr)", borderRadius:6, textAlign:"center", fontSize:12, marginTop:4, width:"100%", padding:"4px" }} value={value} onChange={e => onChange(e.target.value)} placeholder="Custom" />}
+      <div className="vunit">{unit}</div>
+      <div className="vlbl">{label}</div>
+      {norm && <div style={{fontSize:9,color:"var(--txt4)",marginTop:2}}>Normal: {norm}</div>}
+    </div>
+  );
+}
+
 function SectionBox({ title, icon, children }) {
   const [open, setOpen] = useState(true);
   return (
@@ -2379,18 +2415,24 @@ function ConsultationPage({ consultVisit }) {
     return { deducted, notFound };
   };
 
-  const saveDiagnosis = () => {
+  const saveDiagnosis = async () => {
     const allMed = medicines.length > 0 ? medicines : allMedFromTreatment();
-    db.visits = db.visits.map(v => v.id === selVisit.id ? { ...v, temp: vitals.temp, hr: vitals.hr, rr: vitals.rr, weight: vitals.weight, diagnosis: dxText, notes: advice, inventoryDeducted: true } : v);
+    const imagingPayload = Object.entries(imagingFiles).flatMap(([type, files]) =>
+      (files || []).map(f => ({ type, name: f.name, data: f.data, path: f.path || "" }))
+    );
+    db.visits = db.visits.map(v => v.id === selVisit.id ? { ...v, temp: vitals.temp, hr: vitals.hr, rr: vitals.rr, weight: vitals.weight, diagnosis: dxText, notes: advice, imaging: imagingPayload } : v);
     if (allMed.length > 0) {
       const existing = db.prescriptions.find(p => p.visitId === selVisit.id);
       if (!existing) db.prescriptions.push({ id: db.prescriptions.length + 1, visitId: selVisit.id, medicines: allMed });
       else db.prescriptions = db.prescriptions.map(p => p.visitId === selVisit.id ? { ...p, medicines: allMed } : p);
-      // Deduct from inventory only once
       if (!selVisit.inventoryDeducted) {
         const { deducted, notFound } = deductFromInventory(allMed);
-        if (deducted.length) toast(`Y" Inventory updated: ${deducted.join(", ")}`, "success");
-        if (notFound.length) toast(`s ️ Not in inventory: ${notFound.join(", ")}`, "warning");
+        try {
+          await apiRequest(`/treatments/${selVisit.id}/deduct-inventory`, { method: "POST", body: JSON.stringify({ medicines: allMed }) });
+        } catch (err) { console.warn("Server inventory sync:", err.message); }
+        db.visits = db.visits.map(v => v.id === selVisit.id ? { ...v, inventoryDeducted: true } : v);
+        if (deducted.length) toast(`📦 Inventory updated: ${deducted.join(", ")}`, "success");
+        if (notFound.length) toast(`⚠️ Not in inventory: ${notFound.join(", ")}`, "warning");
       }
     }
     saveDB();
@@ -2492,15 +2534,15 @@ function ConsultationPage({ consultVisit }) {
           <div className="card" style={{ marginBottom: 16 }}>
             <div className="card-head"><span className="card-title">🌡️ Vital Signs</span></div>
             <div style={{ padding: "14px 18px", display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 12 }}>
-              {[["temp","Temperature","°F","100-102.5"], ["hr","Heart Rate","bpm","60-120"], ["rr","Resp Rate","/min","10-30"], ["weight","Weight","kg",""]].map(([k,lbl_,unit,norm]) => (
-                <div key={k} className="vbox">
-                  <input style={{ border:"none", background:"transparent", textAlign:"center", fontFamily:"'JetBrains Mono',monospace", fontSize:24, fontWeight:500, color:"var(--ink)", width:"100%", outline:"none" }}
-                    value={vitals[k]} onChange={e => setVitals({...vitals,[k]:e.target.value})} placeholder="—" />
-                  <div className="vunit">{unit}</div>
-                  <div className="vlbl">{lbl_}</div>
-                  {norm && <div style={{fontSize:9,color:"var(--txt4)",marginTop:2}}>Normal: {norm}</div>}
-                </div>
-              ))}
+              <VitalSelect vitalKey="temp" label="Temperature" unit="°F" norm="100-102.5" value={vitals.temp} onChange={v => setVitals({...vitals, temp: v})} />
+              <VitalSelect vitalKey="hr" label="Heart Rate" unit="bpm" norm="60-120" value={vitals.hr} onChange={v => setVitals({...vitals, hr: v})} />
+              <VitalSelect vitalKey="rr" label="Resp Rate" unit="/min" norm="10-30" value={vitals.rr} onChange={v => setVitals({...vitals, rr: v})} />
+              <div className="vbox">
+                <input style={{ border:"none", background:"transparent", textAlign:"center", fontFamily:"'JetBrains Mono',monospace", fontSize:24, fontWeight:500, color:"var(--ink)", width:"100%", outline:"none" }}
+                  value={vitals.weight} onChange={e => setVitals({...vitals, weight: e.target.value})} placeholder="—" />
+                <div className="vunit">kg</div>
+                <div className="vlbl">Weight</div>
+              </div>
             </div>
           </div>
 
@@ -2652,8 +2694,25 @@ function ConsultationPage({ consultVisit }) {
       {tab === "medication" && (
         <div className="fu">
           <div className="card" style={{ marginBottom:16 }}>
+            <div className="card-head"><span className="card-title">📦 Add from Inventory (by category)</span></div>
+            <div style={{ padding:"12px 16px" }}>
+              {[...new Set(db.inventory.map(i => i.category || "Other"))].sort().map(cat => (
+                <div key={cat} style={{ marginBottom: 12 }}>
+                  <div style={{ fontSize: 11, fontWeight: 800, color: "var(--txt3)", textTransform: "uppercase", marginBottom: 6 }}>{cat}</div>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                    {db.inventory.filter(i => (i.category || "Other") === cat && i.stock > 0).map(item => (
+                      <button key={item.id} className="chip" onClick={() => setMedicines([...medicines, { name: item.name, dose: "", duration: "1", instruction: "As directed", notes: `Stock: ${item.stock}` }])}>
+                        {item.name} ({item.stock})
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="card" style={{ marginBottom:16 }}>
             <div className="card-head">
-              <span className="card-title">Y'S Medication List</span>
+              <span className="card-title">💊 Medication List</span>
               <button className="btn btn-ghost btn-sm" onClick={()=>setMedicines([...medicines,{name:"",dose:"",duration:"",instruction:"",notes:""}])}>+ Add Row</button>
             </div>
             <div style={{ padding:"8px 16px" }}>
@@ -3152,7 +3211,7 @@ function InventoryPage() {
   const { db, saveDB, toast } = useApp();
   const [search, setSearch] = useState("");
   const [showModal, setShowModal] = useState(false);
-  const [form, setForm] = useState({ name: "", category: "Antibiotic", stock: "", unit: "tablets", minStock: "", batch: "", expiry: "", price: "", vendor: "" });
+  const [form, setForm] = useState({ name: "", category: "Antibiotic", stock: "", unit: "tablets", minStock: "", batch: "", expiry: todayStr(), price: "", vendor: "" });
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const isValidDate = (d) => d && !isNaN(new Date(d).getTime());
@@ -3289,7 +3348,7 @@ function InventoryPage() {
 // BILLING PAGE
 // ...............................................................................
 
-function BillingPage() {
+function BillingPage({ setPage }) {
   const { db, saveDB, toast } = useApp();
   const [showNew, setShowNew] = useState(false);
   const [viewInv, setViewInv] = useState(null);
@@ -3319,29 +3378,7 @@ function BillingPage() {
     const pet = db.pets.find(p => p.id === inv.petId);
     const owner = db.owners.find(o => o.id === inv.ownerId);
     const w = window.open("", "_blank");
-    w.document.write(`<html><head><title>Invoice</title><style>
-      body{font-family:Arial,sans-serif;padding:30px;color:#000;max-width:720px;margin:0 auto}
-      .head{text-align:center;border-bottom:3px solid #0d1f2d;padding-bottom:14px;margin-bottom:18px}
-      table{width:100%;border-collapse:collapse;margin:14px 0}
-      th{background:#0d1f2d;color:#fff;padding:9px 12px;text-align:left}
-      td{padding:9px 12px;border-bottom:1px solid #eee}
-      .total{font-size:20px;font-weight:bold;text-align:right;padding:10px 0}
-      @media print{button{display:none}}
-    </style></head><body>
-    <div class="head"><div style="font-size:28px">Y</div><h2 style="margin:4px 0">${db.clinicSettings.name}</h2>
-    <div style="font-size:12px">${db.clinicSettings.address}</div>
-    <div style="font-size:12px">${db.clinicSettings.phone} · ${db.clinicSettings.email}</div></div>
-    <div style="display:flex;justify-content:space-between;margin-bottom:14px">
-      <div><strong>Invoice:</strong> INV-${String(inv.id).padStart(3,"0")}<br><strong>Date:</strong> ${new Date(inv.date).toLocaleDateString("en-IN")}<br><strong>Payment:</strong> ${inv.method}</div>
-      <div style="text-align:right"><strong>Pet:</strong> ${pet?.name || "N/A"}<br><strong>Owner:</strong> ${owner?.name || "N/A"}<br><strong>Mobile:</strong> ${owner?.mobile || "N/A"}</div>
-    </div>
-    <table><thead><tr><th>#</th><th>Description</th><th>Qty</th><th>Rate</th><th>Amount</th></tr></thead><tbody>
-    ${inv.items.map((it, i) => `<tr><td>${i+1}</td><td>${it.name}</td><td>${it.qty}</td><td>${it.rate}</td><td>${it.amt}</td></tr>`).join("")}
-    </tbody></table>
-    <div class="total">Total: ₹${inv.total.toLocaleString()}</div>
-    <div style="text-align:center;margin-top:20px;font-size:11px;color:#888">Thank you for choosing ${db.clinicSettings.name}!</div>
-    <br><button onclick="window.print()" style="padding:10px 20px;background:#0d1f2d;color:#fff;border:none;border-radius:6px;cursor:pointer">Print</button>
-    </body></html>`);
+    w.document.write(buildInvoicePrintHtml({ clinic: db.clinicSettings, invoice: inv, pet, owner, currency: "₹" }));
     w.document.close();
   };
 
@@ -3447,8 +3484,9 @@ function BillingPage() {
           <div className="modal modal-lg" onClick={e => e.stopPropagation()}>
             <div className="m-head"><span className="m-title">Invoice INV-{String(viewInv.id).padStart(3,"0")}</span>
               <div style={{ display: "flex", gap: 8 }}>
-                <button className="btn btn-ghost btn-sm" onClick={() => printInvoice(viewInv)}>Y-️ Print</button>
-                <button className="btn-ico" onClick={() => setViewInv(null)} style={{ fontSize: 16 }}>o.</button>
+                <button className="btn btn-ghost btn-sm" onClick={() => printInvoice(viewInv)}>🖨️ Print</button>
+                <button className="btn btn-gold btn-sm" onClick={() => { setViewInv(null); setPage && setPage("dashboard"); }}>← Back to Dashboard</button>
+                <button className="btn-ico" onClick={() => setViewInv(null)} style={{ fontSize: 16 }}>✕</button>
               </div>
             </div>
             <div className="m-body">
@@ -3480,9 +3518,12 @@ function BillingPage() {
 // ...............................................................................
 
 function AnalyticsPage() {
-  const { db } = useApp();
+  const { db, user } = useApp();
   const currency = db.clinicSettings?.currency || "₹";
+  const hideRevenue = user?.role === "receptionist";
   const totalRevenue = db.invoices.reduce((s, i) => s + i.total, 0);
+  const onlineRevenue = db.invoices.filter(i => normalizePaymentMethod(i.method) === "online").reduce((s, i) => s + i.total, 0);
+  const offlineRevenue = db.invoices.filter(i => normalizePaymentMethod(i.method) === "offline").reduce((s, i) => s + i.total, 0);
   const totalVisits = db.visits.length;
   const totalPatients = db.pets.length;
   const totalInvoices = db.invoices.length;
@@ -3490,22 +3531,28 @@ function AnalyticsPage() {
   return (
     <div className="fu">
       <div className="pt" style={{ marginBottom: 6 }}>Analytics & Reports 📊</div>
-      <div className="ps" style={{ marginBottom: 18 }}>Overview snapshot</div>
+      <div className="ps" style={{ marginBottom: 18 }}>Clinic performance overview</div>
       <div className="stats-grid">
         <div className="scard c1"><div className="sval">{totalVisits}</div><div className="slbl">Total Visits</div></div>
-        <div className="scard c2"><div className="sval">{currency}{totalRevenue.toLocaleString()}</div><div className="slbl">Total Revenue</div></div>
+        {!hideRevenue && <div className="scard c2"><div className="sval">{currency}{totalRevenue.toLocaleString()}</div><div className="slbl">Total Revenue</div></div>}
         <div className="scard c3"><div className="sval">{totalPatients}</div><div className="slbl">Active Patients</div></div>
         <div className="scard c4"><div className="sval">{totalInvoices}</div><div className="slbl">Invoices</div></div>
       </div>
-      <div className="card">
-        <div className="card-head"><span className="card-title">Detailed analytics</span></div>
-        <div className="card-body">
-          <div style={{ fontSize: 13, color: "var(--txt2)" }}>
-            Analytics charts are temporarily simplified to keep the build stable. If you want the full charts,
-            I will rebuild them safely without breaking emojis.
+      {!hideRevenue && (
+        <div className="card" style={{ marginBottom: 16 }}>
+          <div className="card-head"><span className="card-title">Payment Method Split</span></div>
+          <div className="card-body" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+            <div style={{ padding: 16, background: "var(--teal-pale)", borderRadius: 10 }}>
+              <div style={{ fontWeight: 700, color: "var(--teal)" }}>🌐 Online</div>
+              <div style={{ fontSize: 28, fontWeight: 700, marginTop: 6 }}>{currency}{onlineRevenue.toLocaleString()}</div>
+            </div>
+            <div style={{ padding: 16, background: "var(--gold-pale)", borderRadius: 10 }}>
+              <div style={{ fontWeight: 700, color: "var(--gold-dim)" }}>💵 Offline</div>
+              <div style={{ fontSize: 28, fontWeight: 700, marginTop: 6 }}>{currency}{offlineRevenue.toLocaleString()}</div>
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
@@ -3619,6 +3666,9 @@ function PlannerPage() {
 function TimelinePage() {
   const { db } = useApp();
   const [selected, setSelected] = useState(db.pets[0]);
+  const [detailEvent, setDetailEvent] = useState(null);
+
+  if (!selected) return <div className="fu"><div className="card" style={{ padding: 32, textAlign: "center" }}>No pets registered</div></div>;
 
   const events = [...db.visits.filter(v => v.petId === selected.id).map(v => ({ type: "visit", date: v.date, data: v })),
     ...db.vaccinations.filter(v => v.petId === selected.id).map(v => ({ type: "vaccine", date: v.given, data: v })),
@@ -3635,7 +3685,7 @@ function TimelinePage() {
           <div className="card-head" style={{ padding: "12px 14px" }}><span className="card-title" style={{ fontSize: 14 }}>Select Patient</span></div>
           <div style={{ padding: 8 }}>
             {db.pets.map(p => (
-              <div key={p.id} onClick={() => setSelected(p)} style={{ display: "flex", gap: 10, alignItems: "center", padding: "9px 10px", borderRadius: 8, cursor: "pointer", background: selected.id === p.id ? "var(--gold-pale)" : "transparent", border: `1px solid ${selected.id === p.id ? "var(--gold)" : "transparent"}`, marginBottom: 4, transition: "all .18s" }}>
+              <div key={p.id} onClick={() => { setSelected(p); setDetailEvent(null); }} style={{ display: "flex", gap: 10, alignItems: "center", padding: "9px 10px", borderRadius: 8, cursor: "pointer", background: selected.id === p.id ? "var(--gold-pale)" : "transparent", border: `1px solid ${selected.id === p.id ? "var(--gold)" : "transparent"}`, marginBottom: 4, transition: "all .18s" }}>
                 <div style={{ fontSize: 22 }}>{p.photo}</div>
                 <div><div style={{ fontWeight: 700, fontSize: 13 }}>{p.name}</div><div style={{ fontSize: 11, color: "var(--txt3)" }}>{p.breed}</div></div>
               </div>
@@ -3650,15 +3700,30 @@ function TimelinePage() {
             </div>
           </div>
           <div className="card-body">
+            {detailEvent && (
+              <div style={{ background: "var(--canvas)", borderRadius: 10, padding: 16, marginBottom: 16 }}>
+                <button className="btn btn-ghost btn-sm" onClick={() => setDetailEvent(null)} style={{ marginBottom: 10 }}>← Back</button>
+                {detailEvent.type === "visit" && (
+                  <>
+                    <div style={{ fontWeight: 800 }}>🩺 {detailEvent.data.diagnosis || "Visit"}</div>
+                    <div style={{ fontSize: 13, marginTop: 6 }}>{detailEvent.data.reason}</div>
+                    <div style={{ fontSize: 13, marginTop: 4 }}>{detailEvent.data.notes}</div>
+                    <ImagingGallery imaging={detailEvent.data.imaging} />
+                  </>
+                )}
+                {detailEvent.type === "vaccine" && <div>💉 {detailEvent.data.vaccine} — Next: {fmt(detailEvent.data.next)}</div>}
+                {detailEvent.type === "invoice" && <div>🧾 ₹{detailEvent.data.total.toLocaleString()} via {detailEvent.data.method}</div>}
+              </div>
+            )}
             <div className="tl">
               {events.map((e, i) => (
-                <div key={i} className="tl-item">
+                <div key={i} className="tl-item" onClick={() => setDetailEvent(e)} style={{ cursor: "pointer" }}>
                   <div className="tl-dot" style={{ background: e.type === "vaccine" ? "var(--teal)" : e.type === "invoice" ? "var(--gold)" : "var(--ink)" }} />
                   <div className="tl-dt">{fmt(e.date)}</div>
                   <div className="tl-box">
-                    {e.type === "visit" && (<><div className="tl-t">Y {e.data.diagnosis || "Visit"}</div><div style={{ fontSize: 12, color: "var(--txt2)", marginTop: 2 }}>{e.data.reason}</div>{e.data.temp && <div style={{ fontSize: 11, color: "var(--txt3)", marginTop: 3 }}>T:{e.data.temp}°F · HR:{e.data.hr}bpm · {e.data.weight}kg</div>}<span className="case-pill" style={{ fontSize: 10, display: "inline-block", marginTop: 6 }}>{e.data.caseNum}</span></>)}
-                    {e.type === "vaccine" && (<><div className="tl-t">Y'? {e.data.vaccine}</div><div style={{ fontSize: 12, color: "var(--txt2)", marginTop: 2 }}>Batch: {e.data.batch} · Next: {fmt(e.data.next)}</div></>)}
-                    {e.type === "invoice" && (<><div className="tl-t">Y' Invoice ?" ,{e.data.total.toLocaleString()}</div><div style={{ fontSize: 12, color: "var(--txt2)", marginTop: 2 }}>Paid via {e.data.method} · {e.data.items.length} items</div></>)}
+                    {e.type === "visit" && (<><div className="tl-t">🩺 {e.data.diagnosis || "Visit"}</div><div style={{ fontSize: 12, color: "var(--txt2)", marginTop: 2 }}>{e.data.reason}</div>{e.data.temp && <div style={{ fontSize: 11, color: "var(--txt3)", marginTop: 3 }}>T:{e.data.temp}°F · HR:{e.data.hr}bpm · {e.data.weight}kg</div>}<span className="case-pill" style={{ fontSize: 10, display: "inline-block", marginTop: 6 }}>{e.data.caseNum}</span></>)}
+                    {e.type === "vaccine" && (<><div className="tl-t">💉 {e.data.vaccine}</div><div style={{ fontSize: 12, color: "var(--txt2)", marginTop: 2 }}>Batch: {e.data.batch} · Next: {fmt(e.data.next)}</div></>)}
+                    {e.type === "invoice" && (<><div className="tl-t">🧾 Invoice — ₹{e.data.total.toLocaleString()}</div><div style={{ fontSize: 12, color: "var(--txt2)", marginTop: 2 }}>Paid via {e.data.method} · {e.data.items.length} items</div></>)}
                   </div>
                 </div>
               ))}
@@ -3677,6 +3742,11 @@ function TimelinePage() {
 
 function RemindersPage() {
   const { db, toast } = useApp();
+  const [serverReminders, setServerReminders] = useState([]);
+  useEffect(() => {
+    apiRequest("/reminders").then(setServerReminders).catch(() => {});
+    apiRequest("/reminders/sync", { method: "POST" }).catch(() => {});
+  }, []);
   const settings = db.clinicSettings || {};
   const vaccLeadDays = settings.reminderVaccDays ?? 7;
   const followLeadDays = settings.reminderFollowupDays ?? 1;
@@ -4275,6 +4345,7 @@ function SystemAdminPage({ initialTab = "users" }) {
   const [showAdd, setShowAdd] = useState(false);
   const [editUser, setEditUser] = useState(null);
   const [form, setForm] = useState({ name: "", email: "", mobile: "", password: "", role: "doctor", active: true });
+  const [userFilter, setUserFilter] = useState("all");
 
   const ROLE_COLORS = { doctor: "var(--teal)", receptionist: "var(--gold-dim)", admin: "var(--red)", owner: "var(--txt3)" };
   const ROLE_ICONS = { doctor: "Y'?s.️", receptionist: "Y'?Y'", admin: "Y>️", owner: "Y " };
@@ -4300,6 +4371,12 @@ function SystemAdminPage({ initialTab = "users" }) {
 
   const sessions = (db.sessions || []);
   const actLog = [...(db.activityLog || [])].reverse().slice(0, 50);
+  const pendingUsers = db.users.filter(u => u.active === false && (u.role === "doctor" || u.role === "receptionist"));
+  const filteredUsers = db.users.filter(u => {
+    if (userFilter === "pending") return u.active === false && (u.role === "doctor" || u.role === "receptionist");
+    if (userFilter === "active") return u.active !== false;
+    return true;
+  });
 
   return (
     <div className="fu">
@@ -4314,8 +4391,8 @@ function SystemAdminPage({ initialTab = "users" }) {
       {/* Stats */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 14, marginBottom: 22 }}>
         {[
-          { l: "Total Users", v: db.users.length, i: "Y'", c: "c1" },
-          { l: "Active Sessions", v: sessions.length || 1, i: "🕒", c: "c3" },
+          { l: "Total Users", v: db.users.length, i: "👥", c: "c1" },
+          { l: "Pending Approval", v: pendingUsers.length, i: "⏳", c: "c2" },
           { l: "Doctors", v: db.users.filter(u=>u.role==="doctor").length, i: "🩺", c: "c2" },
           { l: "Pet Owners", v: db.users.filter(u=>u.role==="owner").length, i: "Y ", c: "c4" },
         ].map((s, i) => (
@@ -4333,12 +4410,18 @@ function SystemAdminPage({ initialTab = "users" }) {
       {/* Users Tab */}
       {tab === "users" && (
         <div className="fu">
+          {pendingUsers.length > 0 && <div className="alert a-warn" style={{ marginBottom: 14 }}>⏳ {pendingUsers.length} staff account(s) awaiting approval</div>}
+          <div style={{ display: "flex", gap: 8, marginBottom: 14 }}>
+            {[["all","All"],["pending","Pending"],["active","Active"]].map(([id,lbl]) => (
+              <button key={id} className={`btn btn-sm ${userFilter===id?"btn-gold":"btn-ghost"}`} onClick={() => setUserFilter(id)}>{lbl}</button>
+            ))}
+          </div>
           <div className="card">
             <div className="tbl-wrap">
               <table>
                 <thead><tr><th>#</th><th>Name</th><th>Email</th><th>Mobile</th><th>Role</th><th>Status</th><th>Last Login</th><th>Actions</th></tr></thead>
                 <tbody>
-                  {db.users.map((u) => (
+                  {filteredUsers.map((u) => (
                     <tr key={u.id} style={{ opacity: u.active === false ? 0.5 : 1 }}>
                       <td style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 12, color: "var(--txt3)" }}>#{u.id}</td>
                       <td>
@@ -4353,7 +4436,7 @@ function SystemAdminPage({ initialTab = "users" }) {
                       <td style={{ fontSize: 12 }}>{u.email}</td>
                       <td style={{ fontSize: 12 }}>{u.mobile || "N/A"}</td>
                       <td><span className="badge" style={{ background: ROLE_COLORS[u.role]+"22", color: ROLE_COLORS[u.role], fontSize: 11 }}>{ROLE_ICONS[u.role]} {u.role}</span></td>
-                      <td><span className={`badge ${u.active !== false ? "b-bill" : "b-emg"}`} style={{ cursor: "pointer" }} onClick={() => toggleActive(u.id)}>{u.active !== false ? "✓ Active" : "✕ Disabled"}</span></td>
+                      <td><span className={`badge ${u.active !== false ? "b-bill" : "b-emg"}`} style={{ cursor: "pointer" }} onClick={() => toggleActive(u.id)}>{u.active !== false ? "✓ Active" : (u.role === "doctor" || u.role === "receptionist" ? "⏳ Pending" : "✕ Disabled")}</span></td>
                       <td style={{ fontSize: 11, color: "var(--txt3)", fontFamily: "'JetBrains Mono',monospace" }}>{u.lastLogin ? new Date(u.lastLogin).toLocaleDateString("en-IN") : "Never"}</td>
                       <td>
                         <div style={{ display: "flex", gap: 5 }}>
@@ -4411,7 +4494,7 @@ function SystemAdminPage({ initialTab = "users" }) {
       {tab === "roles" && (
         <div className="fu">
           <div className="card">
-            <div className="card-head"><span className="card-title">Role-Based Access Control</span></div>
+            <div className="card-head"><span className="card-title">Role-Based Access Control</span><span style={{ fontSize: 12, color: "var(--txt3)" }}>Click to toggle</span></div>
             <div className="card-body">
               <div style={{ overflowX: "auto" }}>
                 <table>
@@ -4425,28 +4508,20 @@ function SystemAdminPage({ initialTab = "users" }) {
                     </tr>
                   </thead>
                   <tbody>
-                    {[
-                      ["Dashboard", true, true, true, false],
-                      ["Patient Queue", true, true, true, false],
-                      ["Appointments", true, true, true, true],
-                      ["Consultation / Diagnosis", true, false, true, false],
-                      ["Prescriptions", true, false, true, false],
-                      ["Vaccination Records", true, true, true, true],
-                      ["Billing & Invoices", true, true, true, false],
-                      ["Inventory", true, true, true, false],
-                      ["Supplier Payments", true, false, true, false],
-                      ["Analytics & Reports", true, false, true, false],
-                      ["Certificates & Forms", true, false, true, false],
-                      ["Settings", false, false, true, false],
-                      ["System Administration", false, false, true, false],
-                      ["View Own Pets (Portal)", false, false, false, true],
-                      ["View Own Prescriptions", false, false, false, true],
-                    ].map(([feat, doc, rec, adm, own]) => (
-                      <tr key={feat}>
-                        <td style={{ fontWeight: 600, fontSize: 13 }}>{feat}</td>
-                        {[doc, rec, adm, own].map((allowed, i) => (
-                          <td key={i} style={{ textAlign: "center" }}>
-                            <span style={{ fontSize: 16 }}>{allowed ? "✓" : "✕"}</span>
+                    {(db.rolePermissions || DEFAULT_ROLE_PERMISSIONS).map((row) => (
+                      <tr key={row.feature}>
+                        <td style={{ fontWeight: 600, fontSize: 13 }}>{PERMISSION_LABELS[row.feature] || row.feature}</td>
+                        {["doctor", "receptionist", "admin", "owner"].map((role) => (
+                          <td key={role} style={{ textAlign: "center", cursor: role === "admin" ? "default" : "pointer" }}
+                            onClick={() => {
+                              if (role === "admin") return;
+                              db.rolePermissions = (db.rolePermissions || DEFAULT_ROLE_PERMISSIONS).map(r =>
+                                r.feature === row.feature ? { ...r, [role]: !r[role] } : r
+                              );
+                              saveDB();
+                              toast("Permission updated", "success");
+                            }}>
+                            <span style={{ fontSize: 16 }}>{row[role] ? "✓" : "✕"}</span>
                           </td>
                         ))}
                       </tr>
@@ -4537,9 +4612,11 @@ function OwnerPortal({ page, user }) {
   const owner = db.owners.find(o => o.mobile === user.mobile) || db.owners[0];
   const myPets = db.pets.filter(p => p.ownerId === owner?.id);
   const [selPetId, setSelPetId] = useState(myPets[0]?.id || null);
+  const [viewPet, setViewPet] = useState(null);
+  const [petForm, setPetForm] = useState(null);
   const [showBookApt, setShowBookApt] = useState(false);
   const [showWalkIn, setShowWalkIn] = useState(false);
-  const [aptForm, setAptForm] = useState({ petId: myPets[0]?.id || "", date: "", time: "10:00", type: "New Visit", notes: "" });
+  const [aptForm, setAptForm] = useState({ petId: myPets[0]?.id || "", date: todayStr(), time: "10:00", type: "New Visit", notes: "" });
   const [walkReason, setWalkReason] = useState("");
   const [walkPetId, setWalkPetId] = useState(myPets[0]?.id || "");
 
@@ -4676,6 +4753,25 @@ function OwnerPortal({ page, user }) {
   // "?"? Page: My Pets (home) "?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?
 
   if (page === "owner-home") {
+    if (viewPet) {
+      const visits = db.visits.filter(v => v.petId === viewPet.id).sort((a, b) => new Date(b.date) - new Date(a.date));
+      return (
+        <div className="fu">
+          <button className="btn btn-ghost btn-sm" onClick={() => setViewPet(null)} style={{ marginBottom: 16 }}>← Back to My Pets</button>
+          <div className="card">
+            <div className="card-head"><span className="card-title">{viewPet.photo} {viewPet.name}</span></div>
+            <div className="card-body">
+              {visits.map(v => (
+                <div key={v.id} style={{ padding: 12, borderBottom: "1px solid var(--bdr3)" }}>
+                  <div style={{ fontWeight: 700 }}>{fmt(v.date)} — {v.diagnosis || v.reason}</div>
+                  <ImagingGallery imaging={v.imaging} />
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      );
+    }
     return (
       <div className="fu">
         <div className="pt" style={{ marginBottom: 18 }}>My Pets 🐾</div>
@@ -4684,7 +4780,7 @@ function OwnerPortal({ page, user }) {
             const visits = db.visits.filter(v => v.petId === pet.id);
             const lastVisit = visits.sort((a, b) => new Date(b.date) - new Date(a.date))[0];
             return (
-              <div key={pet.id} className="pcard" style={{ background: `linear-gradient(135deg,var(--white) 60%,${pet.color})` }}>
+              <div key={pet.id} className="pcard" onClick={() => setViewPet(pet)} style={{ background: `linear-gradient(135deg,var(--white) 60%,${pet.color})`, cursor: "pointer" }}>
                 <div className="pava" style={{ background: pet.color, fontSize: 36, width: 70, height: 70 }}>{pet.photo}</div>
                 <div style={{ flex: 1 }}>
                   <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 20, fontWeight: 700 }}>{pet.name}</div>
@@ -4697,6 +4793,44 @@ function OwnerPortal({ page, user }) {
             );
           })}
         </div>
+      </div>
+    );
+  }
+
+  if (page === "owner-petinfo") {
+    const editPet = myPets.find(p => p.id === (petForm?.id || selPetId)) || myPets[0];
+    const form = petForm || editPet;
+    return (
+      <div className="fu">
+        <div className="pt" style={{ marginBottom: 18 }}>Pet Information 📋</div>
+        {myPets.length === 0 ? <div className="card" style={{ padding: 32, textAlign: "center" }}>No pets linked</div> : (
+          <div className="card" style={{ maxWidth: 560 }}>
+            <div className="card-body">
+              <div className="inp-g"><label className="inp-lbl">Select Pet</label>
+                <select className="inp" value={form?.id || ""} onChange={e => { const p = myPets.find(x => x.id === parseInt(e.target.value)); setPetForm({ ...p }); }}>
+                  {myPets.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                </select>
+              </div>
+              <div className="inp-row cols2">
+                <div className="inp-g"><label className="inp-lbl">Name</label><input className="inp" value={form?.name || ""} onChange={e => setPetForm({ ...form, name: e.target.value })} /></div>
+                <div className="inp-g"><label className="inp-lbl">Breed</label><input className="inp" value={form?.breed || ""} onChange={e => setPetForm({ ...form, breed: e.target.value })} /></div>
+                <div className="inp-g"><label className="inp-lbl">Age (years)</label><input className="inp" type="number" value={form?.age || ""} onChange={e => setPetForm({ ...form, age: e.target.value })} /></div>
+                <div className="inp-g"><label className="inp-lbl">Weight (kg)</label><input className="inp" type="number" value={form?.weight || ""} onChange={e => setPetForm({ ...form, weight: e.target.value })} /></div>
+              </div>
+              <button className="btn btn-gold" onClick={() => { db.pets = db.pets.map(p => p.id === form.id ? { ...p, ...form, weight: parseFloat(form.weight) || p.weight } : p); saveDB(); toast("Pet updated!", "success"); }}>💾 Save</button>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  if (page === "owner-book-apt") {
+    return (
+      <div className="fu">
+        <div className="pt" style={{ marginBottom: 18 }}>Book Appointment 📅</div>
+        <button className="btn btn-gold" onClick={() => setShowBookApt(true)}>📅 Book Appointment</button>
+        <Modals />
       </div>
     );
   }
@@ -4828,6 +4962,7 @@ export default function App() {
   const [user, setUser] = useState(null);
   const [page, setPage] = useState("dashboard");
   const [collapsed, setCollapsed] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
   const [globalSearch, setGlobalSearch] = useState("");
   const [db, setDB] = useState(initDB);
   const [toasts, setToasts] = useState([]);
@@ -4886,17 +5021,7 @@ export default function App() {
     }));
   }, [user]);
 
-  // "?"? Restore session on mount "?"?
-  useEffect(() => {
-    const token = getStoredToken();
-    if (!token) return;
-    hydrateSession({ token }).catch(() => {
-      clearStoredToken();
-      setUser(null);
-    });
-  }, [hydrateSession]);
-
-  // "?"? Activity tracking + idle timer "?"?
+  // Activity tracking + idle timer
   useEffect(() => {
     if (!user) return;
     const resetIdle = () => {
@@ -5018,25 +5143,23 @@ export default function App() {
   };
   const clearVaccinationPrefill = () => setVaccinationPrefill(null);
 
-  // "?"? Role-based page guards "?"?
-  const ROLE_PAGES = {
-    admin: ["dashboard","queue","planner","appointments","patients","consultation","vaccination","timeline","certificates","billing","inventory","suppliers","analytics","reminders","system-admin","settings","admin-users","admin-sessions","admin-activity"],
-    doctor: ["dashboard","queue","planner","appointments","patients","consultation","vaccination","timeline","certificates","billing","inventory","suppliers","analytics","reminders","settings"],
-    receptionist: ["dashboard","queue","planner","appointments","patients","consultation","vaccination","timeline","certificates"],
-    owner: ["owner-home","owner-petinfo","owner-book-apt","owner-records","owner-vaccines","owner-appointments","owner-prescriptions"],
-  };
-
   const canAccess = (pg) => {
     if (!user) return false;
-    const allowed = ROLE_PAGES[user.role] || [];
-    return allowed.includes(pg);
+    return canAccessPage(user.role, pg);
   };
 
   if (!user) {
     if (authView === "register") return (
       <>
         <GlobalStyles />
-        <RegisterPage onBack={() => setAuthView("login")} onSuccess={() => { toast("Account created! Please sign in.","success"); setAuthView("login"); }} />
+        <RegisterPage onBack={() => setAuthView("login")} onSuccess={(status) => {
+          if (status === "pending") {
+            toast("Registration submitted! An admin must approve your account before you can log in.", "warning");
+          } else {
+            toast("Account created! Please sign in.", "success");
+          }
+          setAuthView("login");
+        }} />
         <ToastContainer toasts={toasts} />
       </>
     );
@@ -5075,7 +5198,7 @@ export default function App() {
       case "vaccination": return <VaccinationPage prefill={vaccinationPrefill} clearPrefill={clearVaccinationPrefill} />;
       case "timeline": return <TimelinePage />;
       case "certificates": return <CertificatesPage />;
-      case "billing": return <BillingPage />;
+      case "billing": return <BillingPage setPage={setPageWithDB} />;
       case "inventory": return <InventoryPage />;
       case "suppliers": return <SuppliersPage />;
       case "analytics": return <AnalyticsPage />;
@@ -5103,9 +5226,9 @@ export default function App() {
         </div>
       )}
       <div className="shell" style={{ marginTop: idleWarning ? 40 : 0 }}>
-        <Sidebar page={page} setPage={setPageWithDB} user={user} collapsed={collapsed} setCollapsed={setCollapsed} />
+        <Sidebar page={page} setPage={setPageWithDB} user={user} collapsed={collapsed} setCollapsed={setCollapsed} mobileOpen={mobileOpen} setMobileOpen={setMobileOpen} />
         <div className="main">
-          <Topbar page={page} setPage={setPageWithDB} user={user} onLogout={logout} onSwitchUser={switchUser} globalSearch={globalSearch} setGlobalSearch={setGlobalSearch} activeSessions={activeSessions} />
+          <Topbar page={page} setPage={setPageWithDB} user={user} onLogout={logout} onSwitchUser={switchUser} globalSearch={globalSearch} setGlobalSearch={setGlobalSearch} activeSessions={activeSessions} setConsultVisit={setConsultVisit} onMenuToggle={() => setMobileOpen(v => !v)} />
           <div className="content">{renderPage()}</div>
         </div>
       </div>

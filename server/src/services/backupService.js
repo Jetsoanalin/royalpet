@@ -125,6 +125,7 @@ const listBackups = async () => {
 let cronStarted = false;
 
 const startScheduler = () => {
+  if (process.env.NODE_ENV === "test") return;
   if (cronStarted) return;
   cronStarted = true;
 

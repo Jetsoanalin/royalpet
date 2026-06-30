@@ -5,7 +5,7 @@ const db = require("../src/db/knex");
 process.env.NODE_ENV = "test";
 process.env.JWT_SECRET = "test-secret";
 
-let adminToken, doctorToken, staffToken;
+let adminToken, doctorToken, receptionToken;
 
 const setupDatabase = async () => {
   await db.migrate.latest();
@@ -23,10 +23,9 @@ const loginUser = async (email, password) => {
 describe("INTEGRATION TESTS - Full API Flow", () => {
   beforeAll(async () => {
     await setupDatabase();
-    // Use seeded users: admin@royalpet.com, doctor@royalpet.com, staff@royalpet.com
     adminToken = await loginUser("admin@royalpet.com", "Admin@123");
     doctorToken = await loginUser("doctor@royalpet.com", "Doctor@123");
-    staffToken = await loginUser("staff@royalpet.com", "Staff@123");
+    receptionToken = await loginUser("reception@royalpet.com", "Recep@123");
   });
 
   afterAll(async () => {
@@ -140,7 +139,7 @@ describe("INTEGRATION TESTS - Full API Flow", () => {
       expect(res.status).toBe(401);
     });
 
-    it("staff role cannot delete pets", async () => {
+    it("receptionist role cannot delete pets", async () => {
       const listRes = await request(app)
         .get("/api/pets")
         .set("Authorization", `Bearer ${doctorToken}`);
@@ -149,7 +148,7 @@ describe("INTEGRATION TESTS - Full API Flow", () => {
         const petId = listRes.body.data[0].id;
         const res = await request(app)
           .delete(`/api/pets/${petId}`)
-          .set("Authorization", `Bearer ${staffToken}`);
+          .set("Authorization", `Bearer ${receptionToken}`);
         
         expect(res.status).toBe(403);
       }

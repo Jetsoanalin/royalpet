@@ -22,6 +22,7 @@ const backupRoutes = require("./routes/backupRoutes");
 const csvImportRoutes = require("./routes/csvImportRoutes");
 
 const { startScheduler } = require("./services/backupService");
+const { startReminderScheduler } = require("./services/reminderService");
 
 const app = express();
 
@@ -65,9 +66,10 @@ if (hasClient) {
 
 app.use(errorHandler);
 
-// Start nightly backup scheduler (skip on Vercel — use /api/cron/backup instead)
-if (!process.env.VERCEL) {
+// Skip background schedulers on Vercel (use /api/cron/backup) and during tests
+if (!process.env.VERCEL && env.NODE_ENV !== "test") {
   startScheduler();
+  startReminderScheduler();
 }
 
 module.exports = app;
