@@ -75,6 +75,27 @@ html {
   box-sizing: border-box;
 }
 
+#root:has(.auth-screen) {
+  height: auto;
+  min-height: 100dvh;
+  min-height: 100svh;
+  overflow: visible;
+}
+
+#root:has(.shell) {
+  height: 100dvh;
+  height: 100svh;
+  overflow: hidden;
+}
+
+html:has(.auth-screen),
+body:has(.auth-screen) {
+  height: auto;
+  min-height: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
 h1,
 h2 {
   font-family: var(--heading);

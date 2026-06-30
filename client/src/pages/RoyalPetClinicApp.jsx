@@ -27,7 +27,10 @@ const GlobalStyles = () => (
     }
     *{box-sizing:border-box;margin:0;padding:0}
     html,body{height:100%;font-family:'Plus Jakarta Sans',sans-serif;background:var(--cream);color:var(--txt);overflow-x:hidden}
+    html:has(.auth-screen),body:has(.auth-screen){height:auto;min-height:100%;overflow-x:hidden;overflow-y:auto}
     #root{height:100%}
+    #root:has(.auth-screen){height:auto;min-height:100dvh;min-height:100svh;overflow:visible}
+    #root:has(.shell){height:100dvh;height:100svh;overflow:hidden}
     ::-webkit-scrollbar{width:5px;height:5px}
     ::-webkit-scrollbar-track{background:var(--bdr3)}
     ::-webkit-scrollbar-thumb{background:var(--txt4);border-radius:3px}
@@ -209,12 +212,12 @@ const GlobalStyles = () => (
     .toast{background:var(--ink);color:#fff;padding:12px 18px;border-radius:var(--r);font-size:13px;font-weight:500;box-shadow:var(--s3);animation:pop .3s ease;display:flex;align-items:center;gap:8px;pointer-events:all;max-width:320px}
     .toast.success{background:var(--grn)}.toast.error{background:var(--red)}.toast.warning{background:var(--org)}
     /* Auth pages */
-    .auth-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;position:relative;overflow:hidden;background:radial-gradient(ellipse 80% 60% at 15% 5%,rgba(45,156,156,.22),transparent),radial-gradient(ellipse 70% 50% at 90% 90%,rgba(201,151,58,.18),transparent),linear-gradient(165deg,#0a1824 0%,#122a3d 50%,#0f2e35 100%)}
+    .auth-screen{min-height:100dvh;min-height:100svh;display:flex;align-items:flex-start;justify-content:center;padding:max(24px,env(safe-area-inset-top)) 16px max(32px,env(safe-area-inset-bottom));position:relative;overflow-x:hidden;overflow-y:auto;-webkit-overflow-scrolling:touch;background:radial-gradient(ellipse 80% 60% at 15% 5%,rgba(45,156,156,.22),transparent),radial-gradient(ellipse 70% 50% at 90% 90%,rgba(201,151,58,.18),transparent),linear-gradient(165deg,#0a1824 0%,#122a3d 50%,#0f2e35 100%)}
     .auth-orb{position:absolute;border-radius:50%;filter:blur(70px);pointer-events:none}
     .auth-orb-1{width:340px;height:340px;background:rgba(45,156,156,.3);top:-100px;left:-80px;animation:authFloat 9s ease-in-out infinite}
     .auth-orb-2{width:300px;height:300px;background:rgba(201,151,58,.25);bottom:-80px;right:-60px;animation:authFloat 11s ease-in-out infinite reverse}
     @keyframes authFloat{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(18px,-12px) scale(1.04)}}
-    .auth-wrap{position:relative;z-index:10;width:100%;max-width:440px;animation:fadeUp .5s cubic-bezier(.22,1,.36,1)}
+    .auth-wrap{position:relative;z-index:10;width:100%;max-width:440px;margin:auto 0;animation:fadeUp .5s cubic-bezier(.22,1,.36,1)}
     .auth-wrap-wide{max-width:520px}
     .auth-card{background:rgba(255,255,255,.98);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,.65);border-radius:24px;box-shadow:0 4px 6px rgba(13,31,45,.04),0 24px 48px rgba(13,31,45,.2);overflow:hidden}
     .auth-brand{padding:32px 32px 22px;text-align:center;border-bottom:1px solid var(--bdr2)}
