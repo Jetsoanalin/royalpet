@@ -1,6 +1,5 @@
-const app = require("../server/src/app");
-const { saveBackup } = require("../server/src/services/backupService");
-const logger = require("../server/src/config/logger");
+const { saveBackup } = require("../../server/src/services/backupService");
+const logger = require("../../server/src/config/logger");
 
 module.exports = async (req, res) => {
   const auth = req.headers.authorization || "";

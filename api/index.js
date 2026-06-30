@@ -1,12 +1,9 @@
-let handler;
+/** Vercel serverless handler — export Express app directly (not serverless-http / Lambda format) */
+let app;
 
-module.exports = async (event, context) => {
-  if (!handler) {
-    const serverless = require("serverless-http");
-    const app = require("../server/src/app");
-    handler = serverless(app, {
-      binary: ["multipart/form-data", "image/*", "application/octet-stream"],
-    });
+module.exports = (req, res) => {
+  if (!app) {
+    app = require("../server/src/app");
   }
-  return handler(event, context);
+  return app(req, res);
 };
