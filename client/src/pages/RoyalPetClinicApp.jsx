@@ -199,12 +199,57 @@ const GlobalStyles = () => (
     .toast-wrap{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:10px;pointer-events:none}
     .toast{background:var(--ink);color:#fff;padding:12px 18px;border-radius:var(--r);font-size:13px;font-weight:500;box-shadow:var(--s3);animation:pop .3s ease;display:flex;align-items:center;gap:8px;pointer-events:all;max-width:320px}
     .toast.success{background:var(--grn)}.toast.error{background:var(--red)}.toast.warning{background:var(--org)}
-    /* Login */
-    .login-bg{min-height:100vh;background:linear-gradient(135deg,var(--ink) 0%,var(--ink-soft) 60%,#1a4a5a 100%);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
-    .login-bg::before{content:'';position:absolute;inset:0;pointer-events:none;background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")}
-    .login-card{background:#fff;border-radius:var(--r-xl);box-shadow:var(--s4);width:92%;max-width:480px;overflow:hidden;animation:fadeUp .4s ease;position:relative;z-index:10}
-    .login-head{background:linear-gradient(135deg,var(--gold) 0%,var(--gold-lt) 100%);padding:28px 32px;text-align:center}
-    .login-body{padding:28px 32px}
+    /* Auth pages */
+    .auth-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;position:relative;overflow:hidden;background:radial-gradient(ellipse 80% 60% at 15% 5%,rgba(45,156,156,.22),transparent),radial-gradient(ellipse 70% 50% at 90% 90%,rgba(201,151,58,.18),transparent),linear-gradient(165deg,#0a1824 0%,#122a3d 50%,#0f2e35 100%)}
+    .auth-orb{position:absolute;border-radius:50%;filter:blur(70px);pointer-events:none}
+    .auth-orb-1{width:340px;height:340px;background:rgba(45,156,156,.3);top:-100px;left:-80px;animation:authFloat 9s ease-in-out infinite}
+    .auth-orb-2{width:300px;height:300px;background:rgba(201,151,58,.25);bottom:-80px;right:-60px;animation:authFloat 11s ease-in-out infinite reverse}
+    @keyframes authFloat{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(18px,-12px) scale(1.04)}}
+    .auth-wrap{position:relative;z-index:10;width:100%;max-width:440px;animation:fadeUp .5s cubic-bezier(.22,1,.36,1)}
+    .auth-wrap-wide{max-width:520px}
+    .auth-card{background:rgba(255,255,255,.98);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,.65);border-radius:24px;box-shadow:0 4px 6px rgba(13,31,45,.04),0 24px 48px rgba(13,31,45,.2);overflow:hidden}
+    .auth-brand{padding:32px 32px 22px;text-align:center;border-bottom:1px solid var(--bdr2)}
+    .auth-logo{width:52px;height:52px;margin:0 auto 12px;border-radius:14px;background:linear-gradient(135deg,var(--gold),var(--gold-lt));display:flex;align-items:center;justify-content:center;font-size:24px;box-shadow:0 8px 22px rgba(201,151,58,.32)}
+    .auth-title{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:700;color:var(--ink);letter-spacing:-.02em;line-height:1.2}
+    .auth-sub{font-size:12px;color:var(--txt2);margin-top:5px;font-weight:500}
+    .auth-body{padding:26px 32px 30px}
+    .auth-field{margin-bottom:16px}
+    .auth-label{display:block;font-size:12px;font-weight:600;color:var(--txt2);margin-bottom:6px}
+    .auth-input-wrap{position:relative}
+    .auth-input-icon{position:absolute;left:13px;top:50%;transform:translateY(-50%);font-size:14px;opacity:.4;pointer-events:none;line-height:1}
+    .auth-input{width:100%;padding:12px 14px 12px 40px;border:1.5px solid var(--bdr);border-radius:12px;font-size:14px;font-family:inherit;background:#fff!important;color:var(--txt)!important;transition:border-color .2s,box-shadow .2s}
+    .auth-input.no-icon{padding-left:14px}
+    .auth-input:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 4px rgba(201,151,58,.12)}
+    .auth-input::placeholder{color:var(--txt4)}
+    .auth-input:-webkit-autofill,.auth-input:-webkit-autofill:hover,.auth-input:-webkit-autofill:focus{-webkit-box-shadow:0 0 0 1000px #fff inset!important;-webkit-text-fill-color:var(--txt)!important}
+    .auth-btn{width:100%;padding:14px;border:none;border-radius:12px;font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;background:linear-gradient(135deg,var(--ink) 0%,var(--ink-soft) 100%);color:#fff;transition:transform .15s,box-shadow .2s,opacity .2s;box-shadow:0 4px 14px rgba(13,31,45,.22);margin-top:4px}
+    .auth-btn:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 6px 20px rgba(13,31,45,.28)}
+    .auth-btn:disabled{opacity:.6;cursor:not-allowed;transform:none}
+    .auth-btn-gold{background:linear-gradient(135deg,var(--gold) 0%,var(--gold-lt) 100%);color:var(--ink);box-shadow:0 4px 14px rgba(201,151,58,.32)}
+    .auth-btn-ghost{flex:1;padding:12px;background:transparent;border:1.5px solid var(--bdr);border-radius:12px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;color:var(--txt2);transition:background .15s,border-color .15s}
+    .auth-btn-ghost:hover{background:var(--canvas);border-color:var(--txt4)}
+    .auth-error{background:var(--red-bg);border:1px solid #f0c4bc;color:var(--red);padding:12px 14px;border-radius:12px;font-size:13px;margin-bottom:16px;line-height:1.45}
+    .auth-link-wrap{text-align:center;margin-top:20px;font-size:13px;color:var(--txt3)}
+    .auth-link{background:none;border:none;color:var(--gold-dim);font-weight:700;cursor:pointer;font-family:inherit;font-size:13px;padding:0;margin-left:4px}
+    .auth-link:hover{text-decoration:underline}
+    .auth-roles{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:20px;padding-top:18px;border-top:1px solid var(--bdr2)}
+    .auth-role-pill{font-size:11px;font-weight:600;padding:5px 11px;border-radius:20px;background:var(--canvas);color:var(--txt2);border:1px solid var(--bdr)}
+    .auth-sessions{background:rgba(255,255,255,.08);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:14px 16px;margin-bottom:16px}
+    .auth-sessions-label{font-size:11px;font-weight:700;color:rgba(255,255,255,.55);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px}
+    .auth-sessions-row{display:flex;gap:8px;flex-wrap:wrap}
+    .auth-session-btn{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);border-radius:10px;padding:8px 12px;cursor:pointer;color:#fff;font-family:inherit;transition:background .15s}
+    .auth-session-btn:hover{background:rgba(255,255,255,.18)}
+    .auth-session-avatar{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;flex-shrink:0}
+    .auth-role-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
+    .auth-role-card{border:1.5px solid var(--bdr);background:#fff;border-radius:14px;padding:14px 8px;cursor:pointer;text-align:center;transition:all .18s}
+    .auth-role-card:hover{border-color:var(--gold-lt);background:var(--gold-pale)}
+    .auth-role-card.on{border-color:var(--gold);background:var(--gold-pale);box-shadow:0 0 0 3px rgba(201,151,58,.12)}
+    .auth-role-icon{font-size:22px;margin-bottom:4px}
+    .auth-role-name{font-size:11px;font-weight:700;color:var(--txt)}
+    .auth-role-desc{font-size:10px;color:var(--txt3);margin-top:2px}
+    .auth-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+    .auth-form-actions{display:flex;gap:10px;margin-top:4px}
+    @media(max-width:520px){.auth-body{padding:22px 20px 26px}.auth-brand{padding:26px 20px 18px}.auth-role-grid{grid-template-columns:1fr}.auth-form-grid{grid-template-columns:1fr}}
     /* "?"? Misc utils "?"? */
     .ph{page-header;display:flex;align-items:center;justify-content:space-between;margin-bottom:22px}
     .pt{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:700;color:var(--txt)}
@@ -565,13 +610,42 @@ function ToastContainer({ toasts }) {
 // AUTH PAGES
 // ...............................................................................
 
+const AUTH_ROLE_COLORS = { doctor: "#1a3347", receptionist: "#1d6a6a", admin: "#7a1a1a", owner: "#7a5c1e" };
+const AUTH_ROLE_LABELS = { doctor: "Veterinarian", receptionist: "Receptionist", admin: "Admin", owner: "Pet Owner" };
+
+function AuthShell({ wide, activeSessions, onSwitchUser, children }) {
+  return (
+    <div className="auth-screen">
+      <div className="auth-orb auth-orb-1" aria-hidden="true" />
+      <div className="auth-orb auth-orb-2" aria-hidden="true" />
+      <div className={`auth-wrap${wide ? " auth-wrap-wide" : ""}`}>
+        {activeSessions && activeSessions.length > 0 && (
+          <div className="auth-sessions">
+            <div className="auth-sessions-label">Switch session</div>
+            <div className="auth-sessions-row">
+              {activeSessions.map((s, i) => (
+                <button key={i} type="button" className="auth-session-btn" onClick={() => onSwitchUser && onSwitchUser(s.userId)}>
+                  <div className="auth-session-avatar" style={{ background: AUTH_ROLE_COLORS[s.role] || "#1a3347" }}>{s.avatar}</div>
+                  <div style={{ textAlign: "left" }}>
+                    <div style={{ fontSize: 12, fontWeight: 700 }}>{s.name}</div>
+                    <div style={{ fontSize: 10, opacity: 0.65 }}>{AUTH_ROLE_LABELS[s.role] || s.role}</div>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+        {children}
+      </div>
+    </div>
+  );
+}
+
 function LoginPage({ onLogin, goRegister, activeSessions, onSwitchUser }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [err, setErr] = useState("");
   const [loading, setLoading] = useState(false);
-
-  const ROLE_LABELS = { doctor: "Veterinarian", receptionist: "Receptionist", admin: "Admin", owner: "Pet Owner" };
 
   const doLogin = async (em, pw) => {
     setErr("");
@@ -588,103 +662,63 @@ function LoginPage({ onLogin, goRegister, activeSessions, onSwitchUser }) {
     }
   };
 
-const ROLE_COLORS = { doctor: "#1a3347", receptionist: "#1d6a6a", admin: "#7a1a1a", owner: "#7a5c1e" };
-
   return (
-    <div style={{ minHeight: "100vh", background: "linear-gradient(135deg,#0d1f2d 0%,#1a3347 50%,#1a4a5a 100%)", display: "flex", alignItems: "center", justifyContent: "center", padding: "20px" }}>
-      {/* Non-blocking decorative bg */}
-      <div style={{ position: "fixed", inset: 0, pointerEvents: "none", overflow: "hidden", zIndex: 0 }}>
-        {["🐕","🐱","🦜","🐇","🦮","🐈"].map((e, i) => (
-          <div key={i} style={{ position: "absolute", fontSize: 60 + i*15, opacity: 0.03, top: `${8 + i*15}%`, left: `${4 + i*16}%`, transform: `rotate(${i*40}deg)`, userSelect: "none", pointerEvents: "none" }}>{e}</div>
-        ))}
-      </div>
-
-      <div style={{ position: "relative", zIndex: 10, width: "100%", maxWidth: 480, animation: "fadeUp .4s ease" }}>
-        {/* Active sessions panel */}
-        {activeSessions && activeSessions.length > 0 && (
-          <div style={{ background: "rgba(255,255,255,.07)", borderRadius: 14, padding: "14px 18px", marginBottom: 16, border: "1px solid rgba(255,255,255,.1)" }}>
-            <div style={{ fontSize: 12, fontWeight: 800, color: "rgba(255,255,255,.5)", textTransform: "uppercase", letterSpacing: ".08em", marginBottom: 10 }}>↩ Switch to Active Session</div>
-            <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-              {activeSessions.map((s, i) => (
-                <button key={i} onClick={() => onSwitchUser && onSwitchUser(s.userId)}
-                  style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(255,255,255,.1)", border: "1px solid rgba(255,255,255,.15)", borderRadius: 10, padding: "8px 12px", cursor: "pointer", color: "#fff", fontFamily: "inherit", transition: "background .15s" }}
-                  onMouseEnter={e => e.currentTarget.style.background="rgba(255,255,255,.18)"}
-                  onMouseLeave={e => e.currentTarget.style.background="rgba(255,255,255,.1)"}>
-                  <div style={{ width: 28, height: 28, borderRadius: "50%", background: ROLE_COLORS[s.role]||"#1a3347", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 800 }}>{s.avatar}</div>
-                  <div style={{ textAlign: "left" }}>
-                    <div style={{ fontSize: 12, fontWeight: 700 }}>{s.name}</div>
-                    <div style={{ fontSize: 10, opacity: .6, textTransform: "capitalize" }}>{ROLE_LABELS[s.role]||s.role}</div>
-                  </div>
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Header */}
-        <div style={{ background: "linear-gradient(135deg,#c9973a,#e8bb6e)", borderRadius: "20px 20px 0 0", padding: "28px 32px", textAlign: "center" }}>
-          <div style={{ fontSize: 52, marginBottom: 8, lineHeight: 1 }}>🐾</div>
-          <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 28, fontWeight: 700, color: "#0d1f2d" }}>Royal Pet Clinic</div>
-          <div style={{ fontSize: 11, color: "#5a3a10", marginTop: 4, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase" }}>Management System</div>
+    <AuthShell activeSessions={activeSessions} onSwitchUser={onSwitchUser}>
+      <div className="auth-card">
+        <div className="auth-brand">
+          <div className="auth-logo">🐾</div>
+          <div className="auth-title">Royal Pet Clinic</div>
+          <div className="auth-sub">Sign in to your account</div>
         </div>
-
-        {/* Body */}
-        <div style={{ background: "#fff", borderRadius: "0 0 20px 20px", padding: "28px 32px", boxShadow: "0 20px 60px rgba(0,0,0,.3)" }}>
-
-                    {/* Manual form */}
-          {err && (
-            <div style={{ background: "#fdf0ee", border: "1px solid #f0b0a0", color: "#7a0000", padding: "10px 14px", borderRadius: 8, fontSize: 13, marginBottom: 14 }}>
-              ⚠️ {err}
+        <div className="auth-body">
+          {err && <div className="auth-error">{err}</div>}
+          <div className="auth-field">
+            <label className="auth-label" htmlFor="login-email">Email</label>
+            <div className="auth-input-wrap">
+              <span className="auth-input-icon" aria-hidden="true">✉</span>
+              <input
+                id="login-email"
+                className="auth-input"
+                type="email"
+                placeholder="you@clinic.com"
+                value={email}
+                autoComplete="email"
+                onChange={(e) => setEmail(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && doLogin(email, password)}
+              />
             </div>
-          )}
-          <div style={{ marginBottom: 14 }}>
-            <label style={{ fontSize: 11, fontWeight: 800, color: "#4a5a6a", textTransform: "uppercase", letterSpacing: ".04em", display: "block", marginBottom: 5 }}>Email</label>
-            <input
-              style={{ width: "100%", padding: "10px 13px", border: "1.5px solid #e0dbd4", borderRadius: 8, fontSize: 14, fontFamily: "inherit", outline: "none", transition: "border-color .18s" }}
-              type="email" placeholder="your@email.com" value={email}
-              onChange={e => setEmail(e.target.value)}
-              onFocus={e => e.target.style.borderColor = "#2a4a6a"}
-              onBlur={e => e.target.style.borderColor = "#e0dbd4"}
-              onKeyDown={e => e.key === "Enter" && doLogin(email, password)}
-            />
           </div>
-          <div style={{ marginBottom: 18 }}>
-            <label style={{ fontSize: 11, fontWeight: 800, color: "#4a5a6a", textTransform: "uppercase", letterSpacing: ".04em", display: "block", marginBottom: 5 }}>Password</label>
-            <input
-              style={{ width: "100%", padding: "10px 13px", border: "1.5px solid #e0dbd4", borderRadius: 8, fontSize: 14, fontFamily: "inherit", outline: "none", transition: "border-color .18s" }}
-              type="password" placeholder="••••••••" value={password}
-              onChange={e => setPassword(e.target.value)}
-              onFocus={e => e.target.style.borderColor = "#2a4a6a"}
-              onBlur={e => e.target.style.borderColor = "#e0dbd4"}
-              onKeyDown={e => e.key === "Enter" && doLogin(email, password)}
-            />
+          <div className="auth-field">
+            <label className="auth-label" htmlFor="login-password">Password</label>
+            <div className="auth-input-wrap">
+              <span className="auth-input-icon" aria-hidden="true">🔒</span>
+              <input
+                id="login-password"
+                className="auth-input"
+                type="password"
+                placeholder="Enter your password"
+                value={password}
+                autoComplete="current-password"
+                onChange={(e) => setPassword(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && doLogin(email, password)}
+              />
+            </div>
           </div>
-          <button
-            onClick={() => doLogin(email, password)}
-            disabled={loading}
-            style={{ width: "100%", padding: "13px", background: loading ? "#8a9aaa" : "#0d1f2d", color: "#fff", border: "none", borderRadius: 10, fontSize: 15, fontWeight: 700, cursor: loading ? "not-allowed" : "pointer", fontFamily: "inherit", transition: "background .18s" }}
-          >
-            {loading ? "🔄 Signing in..." : "🔐 Sign In"}
+          <button type="button" className="auth-btn" onClick={() => doLogin(email, password)} disabled={loading}>
+            {loading ? "Signing in…" : "Sign in"}
           </button>
-
-          {/* Register link */}
-          <div style={{ textAlign: "center", marginTop: 18, fontSize: 13, color: "#8a9aaa" }}>
-            New staff member?{" "}
-            <button
-              onClick={goRegister}
-              style={{ background: "none", border: "none", color: "#7a5c1e", fontWeight: 800, cursor: "pointer", fontSize: 13, textDecoration: "underline", fontFamily: "inherit", padding: 0 }}
-            >
-              Register here →
-            </button>
+          <div className="auth-link-wrap">
+            New staff member?
+            <button type="button" className="auth-link" onClick={goRegister}>Create account</button>
           </div>
-
-          {/* Hint */}
-          <div style={{ marginTop: 14, padding: "10px 12px", background: "#fdf6e8", borderRadius: 8, fontSize: 11, color: "#7a5c1e", textAlign: "center", lineHeight: 1.6 }}>
-            💡 4 roles: Doctor · Receptionist · Admin · Pet Owner
+          <div className="auth-roles">
+            {["Doctor", "Receptionist", "Admin", "Pet Owner"].map((r) => (
+              <span key={r} className="auth-role-pill">{r}</span>
+            ))}
           </div>
         </div>
       </div>
-    </div>
+    </AuthShell>
   );
 }
 
@@ -728,80 +762,96 @@ function RegisterPage({ onBack, onSuccess }) {
   };
 
   const roles = [
-    { val: "doctor", label: "Doctor / Vet", icon: "👨‍⚕️", desc: "Full clinical access" },
-    { val: "receptionist", label: "Receptionist", icon: "👩‍💼", desc: "Appointments, billing" },
+    { val: "doctor", label: "Doctor / Vet", icon: "👨‍⚕️", desc: "Clinical access" },
+    { val: "receptionist", label: "Receptionist", icon: "👩‍💼", desc: "Front desk" },
     { val: "owner", label: "Pet Owner", icon: "🏠", desc: "View records" },
   ];
 
-  const S = { inp: { width:"100%", padding:"10px 13px", border:"1.5px solid #e0dbd4", borderRadius:8, fontSize:14, fontFamily:"inherit", outline:"none" }, lbl: { fontSize:11, fontWeight:800, color:"#4a5a6a", textTransform:"uppercase", letterSpacing:".04em", display:"block", marginBottom:5 } };
-
   return (
-    <div style={{ minHeight:"100vh", background:"linear-gradient(135deg,#0d1f2d 0%,#1a3347 50%,#1a4a5a 100%)", display:"flex", alignItems:"center", justifyContent:"center", padding:"20px" }}>
-      <div style={{ position:"relative", zIndex:10, width:"100%", maxWidth:560, animation:"fadeUp .4s ease" }}>
-        {/* Header */}
-        <div style={{ background:"linear-gradient(135deg,#c9973a,#e8bb6e)", borderRadius:"20px 20px 0 0", padding:"22px 28px", display:"flex", alignItems:"center", gap:14 }}>
-          <div style={{ fontSize:36 }}>🐾</div>
-          <div>
-            <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:22, fontWeight:700, color:"#0d1f2d" }}>Create Account</div>
-            <div style={{ fontSize:12, color:"#5a3a10", fontWeight:700 }}>Royal Pet Clinic — Staff / Owner Portal</div>
-          </div>
+    <AuthShell wide>
+      <div className="auth-card">
+        <div className="auth-brand">
+          <div className="auth-logo">🐾</div>
+          <div className="auth-title">Create Account</div>
+          <div className="auth-sub">Royal Pet Clinic — Staff &amp; Owner Portal</div>
         </div>
+        <div className="auth-body">
+          {err && <div className="auth-error">{err}</div>}
 
-        <div style={{ background:"#fff", borderRadius:"0 0 20px 20px", padding:"26px 28px", boxShadow:"0 20px 60px rgba(0,0,0,.3)" }}>
-          {err && <div style={{ background:"#fdf0ee", border:"1px solid #f0b0a0", color:"#7a0000", padding:"10px 14px", borderRadius:8, fontSize:13, marginBottom:14 }}>⚠️ {err}</div>}
-
-          {/* Role picker */}
-          <div style={{ marginBottom:16 }}>
-            <label style={S.lbl}>Select Your Role *</label>
-            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10 }}>
-              {roles.map(r => (
-                <div key={r.val} onClick={() => setForm({
-                  ...form,
-                  role: r.val,
-                  doctorCode: r.val === "doctor" ? form.doctorCode : "",
-                  receptionCode: r.val === "receptionist" ? form.receptionCode : "",
-                })} style={{ border:`2px solid ${form.role===r.val?"#c9973a":"#e0dbd4"}`, background:form.role===r.val?"#fdf6e8":"#fff", borderRadius:12, padding:"12px 8px", cursor:"pointer", textAlign:"center", transition:"all .18s" }}>
-                  <div style={{ fontSize:24 }}>{r.icon}</div>
-                  <div style={{ fontSize:11, fontWeight:800, marginTop:4, color:form.role===r.val?"#7a5c1e":"#1a1a2e" }}>{r.label}</div>
-                  <div style={{ fontSize:10, color:"#8a9aaa", marginTop:2 }}>{r.desc}</div>
+          <div className="auth-field">
+            <span className="auth-label">Select your role</span>
+            <div className="auth-role-grid">
+              {roles.map((r) => (
+                <div
+                  key={r.val}
+                  role="button"
+                  tabIndex={0}
+                  className={`auth-role-card${form.role === r.val ? " on" : ""}`}
+                  onClick={() => setForm({
+                    ...form,
+                    role: r.val,
+                    doctorCode: r.val === "doctor" ? form.doctorCode : "",
+                    receptionCode: r.val === "receptionist" ? form.receptionCode : "",
+                  })}
+                  onKeyDown={(e) => e.key === "Enter" && setForm({ ...form, role: r.val })}
+                >
+                  <div className="auth-role-icon">{r.icon}</div>
+                  <div className="auth-role-name">{r.label}</div>
+                  <div className="auth-role-desc">{r.desc}</div>
                 </div>
               ))}
             </div>
           </div>
 
-          <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:14, marginBottom:14 }}>
-            <div><label style={S.lbl}>Full Name *</label><input style={S.inp} placeholder="Your full name" value={form.name} onChange={e=>setForm({...form,name:e.target.value})} /></div>
-            <div><label style={S.lbl}>Mobile</label><input style={S.inp} placeholder="10-digit mobile" value={form.mobile} onChange={e=>setForm({...form,mobile:e.target.value})} /></div>
+          <div className="auth-form-grid">
+            <div className="auth-field" style={{ marginBottom: 0 }}>
+              <label className="auth-label">Full name</label>
+              <input className="auth-input no-icon" placeholder="Your full name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+            </div>
+            <div className="auth-field" style={{ marginBottom: 0 }}>
+              <label className="auth-label">Mobile</label>
+              <input className="auth-input no-icon" placeholder="10-digit mobile" value={form.mobile} onChange={(e) => setForm({ ...form, mobile: e.target.value })} />
+            </div>
           </div>
-          <div style={{ marginBottom:14 }}><label style={S.lbl}>Email Address *</label><input style={S.inp} type="email" placeholder="email@example.com" value={form.email} onChange={e=>setForm({...form,email:e.target.value})} /></div>
-          <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:14, marginBottom:14 }}>
-            <div><label style={S.lbl}>Password *</label><input style={S.inp} type="password" placeholder="Min 6 characters" value={form.password} onChange={e=>setForm({...form,password:e.target.value})} /></div>
-            <div><label style={S.lbl}>Confirm Password *</label><input style={S.inp} type="password" placeholder="Repeat password" value={form.confirmPwd} onChange={e=>setForm({...form,confirmPwd:e.target.value})} /></div>
+
+          <div className="auth-field">
+            <label className="auth-label">Email address</label>
+            <input className="auth-input no-icon" type="email" placeholder="email@example.com" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
           </div>
+
+          <div className="auth-form-grid">
+            <div className="auth-field" style={{ marginBottom: 0 }}>
+              <label className="auth-label">Password</label>
+              <input className="auth-input no-icon" type="password" placeholder="Min 6 characters" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} />
+            </div>
+            <div className="auth-field" style={{ marginBottom: 0 }}>
+              <label className="auth-label">Confirm password</label>
+              <input className="auth-input no-icon" type="password" placeholder="Repeat password" value={form.confirmPwd} onChange={(e) => setForm({ ...form, confirmPwd: e.target.value })} />
+            </div>
+          </div>
+
           {form.role === "doctor" && (
-            <div style={{ marginBottom: 12 }}>
-              <label style={S.lbl}>Doctor Registration Code *</label>
-              <input style={S.inp} placeholder="Enter doctor code" value={form.doctorCode} onChange={e=>setForm({...form,doctorCode:e.target.value})} />
-              <div style={{ fontSize: 11, color: "#8a9aaa", marginTop: 6 }}>Required for Doctor registration.</div>
+            <div className="auth-field">
+              <label className="auth-label">Doctor registration code</label>
+              <input className="auth-input no-icon" placeholder="Enter doctor code" value={form.doctorCode} onChange={(e) => setForm({ ...form, doctorCode: e.target.value })} />
             </div>
           )}
           {form.role === "receptionist" && (
-            <div style={{ marginBottom: 20 }}>
-              <label style={S.lbl}>Receptionist Registration Code *</label>
-              <input style={S.inp} placeholder="Enter receptionist code" value={form.receptionCode} onChange={e=>setForm({...form,receptionCode:e.target.value})} />
-              <div style={{ fontSize: 11, color: "#8a9aaa", marginTop: 6 }}>Required for Receptionist registration.</div>
+            <div className="auth-field">
+              <label className="auth-label">Receptionist registration code</label>
+              <input className="auth-input no-icon" placeholder="Enter receptionist code" value={form.receptionCode} onChange={(e) => setForm({ ...form, receptionCode: e.target.value })} />
             </div>
           )}
 
-          <div style={{ display:"flex", gap:10 }}>
-            <button onClick={onBack} style={{ flex:1, padding:"12px", background:"transparent", border:"1.5px solid #e0dbd4", borderRadius:10, fontSize:14, fontWeight:700, cursor:"pointer", fontFamily:"inherit", color:"#4a5a6a" }}>← Back to Login</button>
-            <button onClick={submit} disabled={loading} style={{ flex:1, padding:"12px", background:loading?"#8a9aaa":"#c9973a", color:"#0d1f2d", border:"none", borderRadius:10, fontSize:14, fontWeight:800, cursor:loading?"not-allowed":"pointer", fontFamily:"inherit" }}>
-              {loading ? "🔄 Creating..." : "✅ Create Account"}
+          <div className="auth-form-actions">
+            <button type="button" className="auth-btn-ghost" onClick={onBack}>Back to login</button>
+            <button type="button" className="auth-btn auth-btn-gold" style={{ flex: 1, width: "auto" }} onClick={submit} disabled={loading}>
+              {loading ? "Creating…" : "Create account"}
             </button>
           </div>
         </div>
       </div>
-    </div>
+    </AuthShell>
   );
 }
 
