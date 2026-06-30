@@ -2,7 +2,7 @@ process.env.NODE_ENV = "test";
 process.env.JWT_SECRET = "test-secret";
 
 const request = require("supertest");
-const bcrypt = require("bcrypt");
+const bcrypt = require("bcryptjs");
 const app = require("../src/app");
 const { setupTestDb, destroyTestDb, loginAs, CREDENTIALS, db } = require("./helpers/testDb");
 

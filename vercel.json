@@ -4,8 +4,11 @@
   "outputDirectory": "client/dist",
   "installCommand": "npm ci && npm ci --prefix client && npm ci --prefix server",
   "functions": {
+    "api/health.js": {
+      "maxDuration": 10
+    },
     "api/index.js": {
-      "maxDuration": 30,
+      "maxDuration": 60,
       "includeFiles": "server/src/**"
     },
     "api/cron/backup.js": {
@@ -15,6 +18,7 @@
   },
   "rewrites": [
     { "source": "/api/cron/backup", "destination": "/api/cron/backup" },
+    { "source": "/api/health", "destination": "/api/health" },
     { "source": "/api/(.*)", "destination": "/api" },
     { "source": "/uploads/(.*)", "destination": "/api" },
     { "source": "/(.*)", "destination": "/index.html" }

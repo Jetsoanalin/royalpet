@@ -1,4 +1,4 @@
-﻿const bcrypt = require("bcrypt");
+﻿const bcrypt = require("bcryptjs");
 
 exports.seed = async function (knex) {
   const existing = await knex("users").count("id as count").first();

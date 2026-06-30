@@ -16,7 +16,7 @@
 require("dotenv").config({ path: require("path").resolve(__dirname, "..", ".env") });
 require("dotenv").config({ path: require("path").resolve(__dirname, "..", "..", ".env") });
 
-const bcrypt = require("bcrypt");
+const bcrypt = require("bcryptjs");
 const { Client, Databases, Storage, ID, Permission, Role, Query } = require("node-appwrite");
 
 const ENDPOINT = process.env.APPWRITE_ENDPOINT;

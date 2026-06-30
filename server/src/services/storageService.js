@@ -1,6 +1,5 @@
 const fs = require("fs");
 const path = require("path");
-const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
 
 const env = require("../config/env");
 const ApiError = require("../utils/ApiError");
@@ -33,6 +32,7 @@ const getS3Client = () => {
     throw new ApiError(500, "S3 storage is not fully configured");
   }
 
+  const { S3Client } = require("@aws-sdk/client-s3");
   s3Client = new S3Client({
     region: env.S3_REGION,
     endpoint: env.S3_ENDPOINT,
@@ -73,6 +73,7 @@ const storeFile = async (file) => {
   }
 
   if (env.STORAGE_PROVIDER === "s3") {
+    const { PutObjectCommand } = require("@aws-sdk/client-s3");
     const client = getS3Client();
     await client.send(new PutObjectCommand({
       Bucket: env.S3_BUCKET,
